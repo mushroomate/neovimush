@@ -29,6 +29,35 @@ require("lazy").setup({
             },
         },
     },
+
+    {
+        -- treesitter for minimap dependency
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",  -- 自动安装更新解析器
+        event = { "BufReadPost", "BufNewFile" }, -- 延迟加载
+        dependencies = {
+            "nvim-treesitter/nvim-treesitter-textobjects", -- 增强文本对象（可选）
+        },
+        config = function()
+            require("nvim-treesitter.configs").setup({
+                -- 核心功能配置
+                ensure_installed = { "lua", "python", "json", "yaml", "markdown", "bash" }, -- 按需添加语言
+                sync_install = false, -- 异步安装解析器
+                auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
+
+                -- 启用高亮
+                highlight = {
+                    enable = true,
+                    additional_vim_regex_highlighting = false, -- 禁用旧版 regex 高亮（提升性能）
+                },
+
+                -- 其他模块（按需启用）
+                indent = { enable = true },          -- 缩进（实验性）
+                incremental_selection = { enable = true }, -- 增量选择
+                textobjects = { enable = true },     -- 文本对象（如函数/类选择）
+            })
+        end,
+    },
     -- Vscode-like pictograms
     {
         "onsails/lspkind.nvim",
@@ -36,7 +65,7 @@ require("lazy").setup({
     },
     -- Auto-completion engine
     {
-        "hrsh7th/nvim-cmp", 
+        "hrsh7th/nvim-cmp",
         dependencies = {
             "lspkind.nvim",
             "hrsh7th/cmp-nvim-lsp",
@@ -84,6 +113,15 @@ require("lazy").setup({
         version = false, -- set this if you want to always pull the latest change
         opts = {
             -- add any opts here
+            provider = "deepseek",
+            vendors = {
+                deepseek = {
+                    __inherited_from = "openai",
+                    -- api_key_name = "",
+                    endpoint = "https://api.deepseek.com/",
+                    model = "deepseek-coder",
+                },
+            },
         },
         -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
         -- build = "make",
@@ -125,18 +163,88 @@ require("lazy").setup({
     },
 
     -- file manager side bar     
-    "preservim/nerdtree",    
+    "preservim/nerdtree",
     "Xuyuanp/nerdtree-git-plugin", -- add git support    
     "ryanoasis/vim-devicons", -- add icons    
     "scrooloose/nerdtree-project-plugin", --saves and restore the sate between sessions.    
     "PhiLRunninger/nerdtree-buffer-ops", -- Highlites open files, and closes a buffer directly from NERDTree
 
     -- git    
-    {    
-        "ThePrimeagen/git-worktree.nvim",    
+    {
+        "ThePrimeagen/git-worktree.nvim",
         -- config={ },    
-    },    
+    },
+    -- yazi
+    {
+        "mikavilpas/yazi.nvim",
+        event = "VeryLazy",
+        dependencies = {
+            "folke/snacks.nvim"
+        },
+        keys = {
+            {
+                "<leader>-",
+                mode = { "n", "v" },
+                "<cmd>Yazi<cr>",
+                desc = "Open yazi at current file",
+            },
+            {
+                "<leader>cw",
+                "<cmd>Yazi cwd<cr>",
+                desc = "Open the file manager in nvim's working directory",
+            },
+            {
+                "<leader>yl",
+                "<cmd>Yazi toggle<cr>",
+                desc = "Resume the last yazi session",
+            },
+        },
+        ---@type YaziConfig | {}
+        opts = {
+            open_for_directories = false,
+            keymaps = {
+                show_help = "<leader>yh",
+            },
+        },
+        -- if use `open_for_directories=true`, recommended add a setting as below
+        init = function()
+        -- more details: https://github.com/mikavilpas/yazi.nvim/issues/802
+        -- vim.g.loaded_netrw = 1
+            vim.g.loaded_netrwPlugin = 1
+        end,
+    },
+
+    -- minimap
+    {
+        'gorbit99/codewindow.nvim',
+        config = function()
+            local codewindow = require('codewindow')
+            codewindow.setup({
+                active_in_terminals = false,
+                auto_enable = true,
+                exclude_filetypes = { 'help' },
+                max_minimap_height = nil,
+                max_lines = nil,
+                minimap_width = 13,
+                use_lsp = true,
+                use_treesitter = true,
+                use_git = true,
+                width_multiplier = 3,
+                z_index = 1,
+                show_cursor = true,
+                screen_bounds = 'lines',
+                window_border = 'single',
+                relative = 'win',
+                events = { 'TextChanged', 'InsertLeave', 'DiagnosticChanged', 'FileWritepost' }
+            })
+            codewindow.apply_default_keybinds()
+
+            -- optional: custom Highlites set
+            -- vim.api.nvim_set_hl(0, 'CodewindowBorder', { fg = '#ffff00' })
+        end
+    },
     -- others...
+
 })
 
 require("mason").setup()
