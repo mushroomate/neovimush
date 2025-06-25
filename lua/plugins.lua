@@ -113,15 +113,26 @@ require("lazy").setup({
         version = false, -- set this if you want to always pull the latest change
         opts = {
             -- add any opts here
-            provider = "deepseek",
-            vendors = {
+            -- provider = "deepseek",
+            -- provider = "cloude",
+            auto_suggestions_provider = "claude",
+            providers = {
+                claude = {
+                    endpoint = "https://api.anthropic.com",
+                    model = "claude-3-5-sonnet-20241022",
+                    extra_request_body = {
+                        temperature = 0.75,
+                        max_tokens = 4096,
+                    },
+                },
                 deepseek = {
                     __inherited_from = "openai",
-                    -- api_key_name = "",
+                    api_key_name = "",
                     endpoint = "https://api.deepseek.com/",
                     model = "deepseek-coder",
                 },
             },
+
         },
         -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
         build = "make",
@@ -208,8 +219,8 @@ require("lazy").setup({
         },
         -- if use `open_for_directories=true`, recommended add a setting as below
         init = function()
-        -- more details: https://github.com/mikavilpas/yazi.nvim/issues/802
-        -- vim.g.loaded_netrw = 1
+            -- more details: https://github.com/mikavilpas/yazi.nvim/issues/802
+            -- vim.g.loaded_netrw = 1
             vim.g.loaded_netrwPlugin = 1
         end,
     },
@@ -221,7 +232,7 @@ require("lazy").setup({
             local codewindow = require('codewindow')
             codewindow.setup({
                 active_in_terminals = false,
-                auto_enable = true,
+                auto_enable = false,
                 exclude_filetypes = { 'help' },
                 max_minimap_height = nil,
                 max_lines = nil,
