@@ -41,7 +41,7 @@ require("lazy").setup({
         config = function()
             require("nvim-treesitter.configs").setup({
                 -- 核心功能配置
-                ensure_installed = { "lua", "python", "json", "yaml", "markdown", "bash" }, -- 按需添加语言
+                ensure_installed = { "lua", "python", "json", "yaml", "markdown", "bash", "rust" }, -- 按需添加语言
                 sync_install = false, -- 异步安装解析器
                 auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
 
@@ -89,6 +89,84 @@ require("lazy").setup({
 
     -- file manager
     {
+        "nvim-tree/nvim-tree.lua",
+        version = "*",
+        lazy = false,
+        dependencies = {
+            "nvim-tree/nvim-web-devicons",
+        },
+        config = function()
+            -- 禁用内置netrw
+            vim.g.loaded_netrw = 1
+            vim.g.loaded_netrwPlugin = 1
+
+            require("nvim-tree").setup({
+                -- 基本设置
+                sort_by = "case_sensitive",
+                view = {
+                    width = 30,
+                    adaptive_size = true,
+                },
+                -- 渲染设置
+                renderer = {
+                    group_empty = true,
+                    icons = {
+                        show = {
+                            file = true,
+                            folder = true,
+                            folder_arrow = true,
+                            git = true,
+                        },
+                    },
+                },
+                -- 过滤器设置
+                filters = {
+                    dotfiles = false,
+                    custom = { "^.git$" },
+                    exclude = { ".gitignore" },
+                },
+                -- Git 支持
+                git = {
+                    enable = true,
+                    ignore = false,
+                    timeout = 500,
+                },
+                -- 系统设置
+                system_open = {
+                    cmd = nil,
+                    args = {},
+                },
+                -- 文件监视
+                update_focused_file = {
+                    enable = true,
+                    update_cwd = true,
+                },
+                -- 诊断集成
+                diagnostics = {
+                    enable = true,
+                    show_on_dirs = true,
+                },
+                -- 性能优化
+                actions = {
+                    use_system_clipboard = true,
+                    change_dir = {
+                        enable = true,
+                        global = false,
+                    },
+                    open_file = {
+                        quit_on_open = false,
+                        resize_window = true,
+                    },
+                },
+            })
+
+            -- 设置快捷键
+            vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
+            vim.keymap.set('n', '<leader>tf', ':NvimTreeFocus<CR>', { noremap = true, silent = true })
+            vim.keymap.set('n', '<leader>tr', ':NvimTreeRefresh<CR>', { noremap = true, silent = true })
+        end,
+    },
+    {
         "ibhagwan/fzf-lua",
         -- optional for icon support
         dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -98,7 +176,7 @@ require("lazy").setup({
         end
     },
 
-    -- Orgmode 
+    -- Orgmode
     "nvim-orgmode/orgmode",
     "nvim-neorg/neorg",
 
@@ -173,17 +251,11 @@ require("lazy").setup({
         },
     },
 
-    -- file manager side bar     
-    "preservim/nerdtree",
-    "Xuyuanp/nerdtree-git-plugin", -- add git support    
-    "ryanoasis/vim-devicons", -- add icons    
-    "scrooloose/nerdtree-project-plugin", --saves and restore the sate between sessions.    
-    "PhiLRunninger/nerdtree-buffer-ops", -- Highlites open files, and closes a buffer directly from NERDTree
 
-    -- git    
+    -- git
     {
         "ThePrimeagen/git-worktree.nvim",
-        -- config={ },    
+        -- config={ },
     },
     -- yazi
     {
