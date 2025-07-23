@@ -7,5 +7,5 @@ Including:
 - Avante (AI assistant)
 - Monokai Pro (my favorite editor theme)
 - codewindow
-- NerdTree (File manager)
+- nvim-tree (File manager)
 - Yazi (File manager)
