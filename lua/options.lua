@@ -1,5 +1,5 @@
 -- default terminal
-vim.o.shell = "zsh"
+vim.o.shell = "pwsh"
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
 vim.opt.clipboard = 'unnamedplus' --use system clipboard
