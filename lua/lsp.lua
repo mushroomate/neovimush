@@ -78,4 +78,13 @@ lspconfig.marksman.setup({
 })
 lspconfig.biome.setup({
 	on_attach = on_attach,
+    file_types = {
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "json",
+        "jsonc"
+    },
+    single_file_support = true,
 })
