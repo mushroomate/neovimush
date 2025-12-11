@@ -11,6 +11,14 @@ if not (vim.uv or vim.loop).fs_stat(lazypath)then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local avante_build_cmd
+-- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
+if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    avante_build_cmd = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
+else
+    avante_build_cmd = "make"
+end
+
 
 -- require of the monoka
 require("lazy").setup({
@@ -197,6 +205,27 @@ require("lazy").setup({
     -- vim.suda
     "lambdalisue/vim-suda",
 
+    -- AI auto-completion Exafunction/windsurf.nvim 
+    -- https://github.com/Exafunction/windsurf.nvim
+    {
+        "Exafunction/windsurf.nvim",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "hrsh7th/nvim-cmp",
+        },
+        config = function()
+            require("codeium").setup({
+            })
+        end,
+        opts = {
+            api = {
+                host = "api.deepseek.com",
+                port = 443,
+                path = "/v1/completions",
+            }
+        },
+    },
+
     -- AI plugin /avante.nvim
     {
         "yetone/avante.nvim",
@@ -226,9 +255,7 @@ require("lazy").setup({
             },
 
         },
-        -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-        build = "make",
-        -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false", -- for windows
+        build = avante_build_cmd,
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
             "stevearc/dressing.nvim",

@@ -1,5 +1,11 @@
 -- default terminal
-vim.o.shell = "zsh"
+local default_shell
+if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    default_shell = "pwsh"
+else
+    default_shell = "zsh"
+end
+vim.o.shell = default_shell
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
 vim.g.clipboard = 'osc52' --use system clipboard
@@ -29,3 +35,4 @@ vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entere
 
 -- encoding
 vim.opt.encoding = 'utf-8'
+
