@@ -11,6 +11,7 @@ require('mason').setup({
 require('mason-lspconfig').setup({
     -- A list of servers to automatically install if they're not already installed
     ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier' },
+    automatic_installation = true,
 })
 
 -- rest of the configuration
@@ -19,7 +20,6 @@ require('mason-lspconfig').setup({
 -- How to use setup({}): https://github.com/neovim/nvim-lspconfig/wiki/Understanding-setup-%7B%7D
 --     - the settings table is sent to the LSP
 --     - on_attach: a lua callback function to run after LSP attaches to a given buffer
-local lspconfig = require('lspconfig')
 
 -- Customized on_attach function
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
@@ -56,38 +56,52 @@ local on_attach = function(client, bufnr)
     end, bufopts)
 end
 
--- Configure each language
--- How to add LSP for a specific language?
--- 1. use `:Mason` to install corresponding LSP
--- 2. add configuration below
--- lspconfig.pylsp.setup({
-	-- on_attach = on_attach,
--- })
--- 'pylsp', 'lua_ls', 'rust_analyzer', 'marksman', 'biome' 
-lspconfig.pylsp.setup({
-	on_attach = on_attach,
+local cmp_nvim_lsp = require('cmp_nvim_lsp')
+local cmp = require('cmp')
+local lsp_capabilities = cmp_nvim_lsp.default_capabilities()
+
+cmp.setup({
+    snippet = { ... },
+    mapping = { ... },
+    sources = { ... },
 })
-lspconfig.ruff.setup({
-	on_attach = on_attach,
+
+local common_config = {
+    on_attach = on_attach,
+    -- 可以在这里添加其他通用设置，例如 capabilities
+    capabilities = lsp_capabilities,
+}
+
+
+-- 配置每个语言服务器
+vim.lsp.config['pylsp'] = vim.tbl_deep_extend('force', common_config, {
+    -- 可以添加 pylsp 特有的设置
 })
-lspconfig.lua_ls.setup({
-	on_attach = on_attach,
+
+vim.lsp.config['ruff'] = vim.tbl_deep_extend('force', common_config, {
+    -- ruff 特有设置
 })
-lspconfig.rust_analyzer.setup({
-	on_attach = on_attach,
+
+vim.lsp.config['lua_ls'] = vim.tbl_deep_extend('force', common_config, {
+    settings = {
+        Lua = {
+            runtime = { version = 'LuaJIT' },
+            diagnostics = { globals = { 'vim' } },
+            workspace = { library = vim.api.nvim_get_runtime_file("", true) },
+            telemetry = { enable = false },
+        }
+    }
 })
-lspconfig.marksman.setup({
-	on_attach = on_attach,
+
+vim.lsp.config['rust_analyzer'] = vim.tbl_deep_extend('force', common_config, {
+    -- rust_analyzer 特有设置
 })
-lspconfig.prettier.setup({
-	on_attach = on_attach,
-    file_types = {
-        "javascript",
-        "javascriptreact",
-        "typescript",
-        "typescriptreact",
-        "json",
-        "jsonc",
-    },
-    single_file_support = true,
+
+vim.lsp.config['marksman'] = vim.tbl_deep_extend('force', common_config, {
+    -- marksman 特有设置
 })
+
+-- 启用所有已配置的服务器
+for server_name, _ in pairs(vim.lsp.config) do
+    vim.lsp.enable(server_name)
+end
