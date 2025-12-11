@@ -2,7 +2,7 @@
 vim.o.shell = "zsh"
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
-vim.opt.clipboard = 'unnamedplus' --use system clipboard
+vim.g.clipboard = 'osc52' --use system clipboard
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 vim.opt.mouse = 'a' -- allow the mouse to be used in Nvim
 
@@ -29,4 +29,3 @@ vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entere
 
 -- encoding
 vim.opt.encoding = 'utf-8'
-
