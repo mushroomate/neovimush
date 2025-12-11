@@ -10,7 +10,7 @@ require('mason').setup({
 
 require('mason-lspconfig').setup({
     -- A list of servers to automatically install if they're not already installed
-    ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'biome' },
+    ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier' },
 })
 
 -- rest of the configuration
@@ -79,7 +79,7 @@ lspconfig.rust_analyzer.setup({
 lspconfig.marksman.setup({
 	on_attach = on_attach,
 })
-lspconfig.biome.setup({
+lspconfig.prettier.setup({
 	on_attach = on_attach,
     file_types = {
         "javascript",
