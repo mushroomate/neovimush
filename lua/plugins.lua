@@ -183,6 +183,27 @@ require("lazy").setup({
     -- vim.suda
     "lambdalisue/vim-suda",
 
+    -- AI auto-completion Exafunction/windsurf.nvim 
+    -- https://github.com/Exafunction/windsurf.nvim
+    {
+        "Exafunction/windsurf.nvim",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "hrsh7th/nvim-cmp",
+        },
+        config = function()
+            require("codeium").setup({
+            })
+        end,
+        opts = {
+            api = {
+                host = "api.deepseek.com",
+                port = 443,
+                path = "/v1/completions",
+            }
+        },
+    },
+
     -- AI plugin /avante.nvim
     {
         "yetone/avante.nvim",
