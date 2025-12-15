@@ -62,8 +62,28 @@ local lsp_capabilities = cmp_nvim_lsp.default_capabilities()
 
 cmp.setup({
     snippet = { ... },
-    mapping = { ... },
-    sources = { ... },
+    window = {
+      completion = cmp.config.window.bordered(),
+      documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    }),
+    sources = cmp.config.sources({
+      { name = 'lazydev' },
+      { name = 'nvim_lsp' },
+      -- { name = 'vsnip' }, -- For vsnip users.
+      { name = 'luasnip' }, -- For luasnip users.
+      -- { name = 'ultisnips' }, -- For ultisnips users.
+      -- { name = 'snippy' }, -- For snippy users.
+    }, {
+      { name = 'buffer' },
+      { name = 'path'},
+    })
 })
 
 local common_config = {
@@ -71,7 +91,6 @@ local common_config = {
     -- 可以在这里添加其他通用设置，例如 capabilities
     capabilities = lsp_capabilities,
 }
-
 
 -- 配置每个语言服务器
 vim.lsp.config['pylsp'] = vim.tbl_deep_extend('force', common_config, {
