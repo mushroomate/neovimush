@@ -109,6 +109,9 @@ require("lazy").setup({
     "williamboman/mason-lspconfig.nvim",
     "neovim/nvim-lspconfig",
 
+    -- DAP
+    require("dapcfg"),
+
     -- file manager
     {
         "nvim-tree/nvim-tree.lua",
