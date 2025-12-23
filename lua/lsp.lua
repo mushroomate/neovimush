@@ -10,7 +10,7 @@ require('mason').setup({
 
 require('mason-lspconfig').setup({
     -- A list of servers to automatically install if they're not already installed
-    ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier', 'omnisharp' },
+    ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier', 'omnisharp', 'nil_ls' },
     automatic_installation = true,
 })
 
@@ -121,6 +121,9 @@ vim.lsp.config['marksman'] = vim.tbl_deep_extend('force', common_config, {
 })
 
 vim.lsp.config['omnisharp'] = vim.tbl_deep_extend('force', common_config, {
+})
+
+vim.lsp.config['nil_ls'] = vim.tbl_deep_extend('force', common_config, {
 })
 
 -- 启用所有已配置的服务器
