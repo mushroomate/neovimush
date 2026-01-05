@@ -8,7 +8,9 @@ require('mason').setup({
     }
 })
 
-local ensure_installed_lsp = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier', 'omnisharp', 'nil_ls' }
+--- todo: add Linter & Formatter modules
+---       including: 'prettier'
+local ensure_installed_lsp = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls' }
 
 -- Discard LSPs which do not supported by Windows
 if vim.fn.has("win32") == 1 then
