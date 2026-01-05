@@ -8,9 +8,26 @@ require('mason').setup({
     }
 })
 
+local ensure_installed_lsp = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier', 'omnisharp', 'nil_ls' }
+
+-- Discard LSPs which do not supported by Windows
+if vim.fn.has("win32") == 1 then
+    local windows_exclude = { 'nil_ls' }
+    
+    for i = #ensure_installed_lsp, 1, -1 do
+        local current_tool = ensure_installed_lsp[i]
+
+        for _, exlude_name in ipairs(windows_exclude) do
+            if current_tool == exlude_name then
+                table.remove(ensure_installed_lsp, i)
+            end
+        end
+    end
+end
+
 require('mason-lspconfig').setup({
     -- A list of servers to automatically install if they're not already installed
-    ensure_installed = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'prettier', 'omnisharp', 'nil_ls' },
+    ensure_installed = ensure_installed_lsp,
     automatic_installation = true,
 })
 
