@@ -112,6 +112,17 @@ require("lazy").setup({
     -- DAP
     require("dapcfg"),
 
+    -- For vim configure LSP
+    {
+        "folke/lazydev.nvim",
+        ft = "lua",
+        opts = {
+            library = {
+                { path = "lazy.nvim", words = { "LazyVim" } },
+            },
+        },
+    },
+
     -- file manager
     {
         "nvim-tree/nvim-tree.lua",
