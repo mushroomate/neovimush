@@ -10,7 +10,7 @@ require('mason').setup({
 
 --- todo: add Linter & Formatter modules
 ---       including: 'prettier'
-local ensure_installed_lsp = { 'pylsp', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'biome' }
+local ensure_installed_lsp = { 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'biome' }
 
 -- Discard LSPs which do not supported by Windows
 if vim.fn.has("win32") == 1 then
@@ -116,7 +116,6 @@ local util = require("lspconfig.util")
 local lspconfig = require("lspconfig")
 local servers = {}
 
-servers.pylsp = {}
 servers.ruff = {}
 servers.rust_analyzer = {}
 servers.marksman = {}
