@@ -222,9 +222,9 @@ require("lazy").setup({
         end,
         opts = {
             api = {
-                host = "api.deepseek.com",
+                host = "https://api.deepseek.com",
                 port = 443,
-                path = "/v1/completions",
+                path = "autocomplete",
             }
         },
     },
