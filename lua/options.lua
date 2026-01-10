@@ -41,6 +41,7 @@ if vim.g.neovide then
     -- clipboard
     vim.g.neovide_no_terminal_clipboard = true
     if vim.fn.executable('wl-copy') == 1 then
+        -- wayland
         vim.g.clipboard = {
             name = 'wl-clipboard',
             copy = {
@@ -50,6 +51,19 @@ if vim.g.neovide then
             paste = {
                 ['+'] = { 'wl-paste', '--no-newline' },
                 ['*'] = { 'wl-paste', '--no-newline' },
+            },
+        }
+    elseif vim.fn.executable('xclip') == 1 then
+        -- X11
+        vim.g.clipboard = {
+            name = 'xclip',
+            copy = {
+                ['+'] = { 'xclip', '-selection', 'clipboard' },
+                ['*'] = { 'xclip', '-selection', 'clipboard' },
+            },
+            paste = {
+                ['+'] = { 'xclip', '-selection', 'clipboard', '-o' },
+                ['*'] = { 'xclip', '-selection', 'clipboard', '-o' },
             },
         }
     else
