@@ -36,3 +36,57 @@ vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entere
 -- encoding
 vim.opt.encoding = 'utf-8'
 
+-- GUI setting
+if vim.g.neovide then
+    -- clipboard
+    vim.g.neovide_no_terminal_clipboard = true
+    if vim.fn.executable('wl-copy') == 1 then
+        vim.g.clipboard = {
+            name = 'wl-clipboard',
+            copy = {
+                ['+'] = { 'wl-copy', '--type', 'text/plain' },
+                ['*'] = { 'wl-copy', '--type', 'text/plain' },
+            },
+            paste = {
+                ['+'] = { 'wl-paste', '--no-newline' },
+                ['*'] = { 'wl-paste', '--no-newline' },
+            },
+        }
+    else
+        vim.g.clipboard = "unnamedplus"
+    end
+
+    -- enable multigrid mode
+    vim.g.neovide_multigrid = true
+
+    -- font setting
+    vim.opt.guifont = "Inconsolata Nerd Font Mono:h16"
+
+    -- opacity & blur
+    vim.g.neovide_opacity = 0.92
+    vim.g.neovide_floating_blur_amount_x = 2.0
+    vim.g.neovide_floating_blur_amount_y = 2.0
+
+    -- cursor 
+    vim.g.neovide_cursor_vfx_mode = "pixiedust"
+    vim.g.neovide_cursor_animation_length = 0.13
+    vim.g.neovide_cursor_trail_size = 0.8
+    vim.g.neovide_hide_mouse_when_typing = true
+
+    -- refresh rate
+    vim.g.neovide_refresh_rate = 144
+    vim.g.neovide_refresh_rate_idle = 5
+
+    -- AA
+    vim.g.neovide_font_antialias = true
+    vim.g.neovide_font_subpixel = true
+
+    -- IME optmize (I don't know the feature of this option now)
+    -- vim.g.neovide_input_ime = true
+
+    -- shortcut
+    vim.keymap.set('n', '<F11>', function()
+        vim.g.neovide_fullscreen = not vim.g.neovide_fullscreen
+    end)
+end
+
