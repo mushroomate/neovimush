@@ -5,6 +5,12 @@ return {
         "nvim-neotest/nvim-nio",
         "jay-babu/mason-nvim-dap.nvim",
         "mfussenegger/nvim-dap-python",
+        {
+            "ownself/nvim-dap-unity",
+            build = function()
+                require("nvim-dap-unity").install()
+            end,
+        },
      },
     config = function()
         local dap, dapui = require("dap"), require("dapui")
@@ -17,6 +23,9 @@ return {
         dap.listeners.before.event_terminated.dapui_config = function() dapui.close() end
 
         dap.listeners.before.event_exited.dapui_config = function() dapui.close() end
+
+
+        dap.configurations.cs = dap.configurations.cs or {}
 
         require("mason-nvim-dap").setup({
             -- Avaliable Dap adapters: See https://github.com/jay-babu/mason-nvim-dap.nvim/blob/main/lua/mason-nvim-dap/mappings/source.lua
