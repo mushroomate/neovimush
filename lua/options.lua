@@ -74,7 +74,8 @@ if vim.g.neovide then
     vim.g.neovide_multigrid = true
 
     -- font setting
-    vim.opt.guifont = "Inconsolata Nerd Font Mono:h16"
+    -- vim.opt.guifont = "Inconsolata Nerd Font Mono:h16"
+    vim.opt.guifont = "DepartureMono Nerd Font Propo,Inconsolata Nerd Font Mono:h12"
 
     -- opacity & blur
     vim.g.neovide_opacity = 0.92
