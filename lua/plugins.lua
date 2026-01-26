@@ -123,6 +123,18 @@ require("lazy").setup({
         },
     },
 
+    -- dashboard
+    {
+        "nvimdev/dashboard-nvim",
+        event = "VimEnter",
+        config = function()
+            require("dashboard").setup({
+                theme = "hypr",
+            })
+        end,
+        dependencies = { {'nvim-tree/nvim-web-devicons'} }
+    },
+
     -- file manager
     {
         "nvim-tree/nvim-tree.lua",
