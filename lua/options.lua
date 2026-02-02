@@ -100,7 +100,7 @@ if vim.g.neovide then
     -- vim.g.neovide_input_ime = true
 
     -- shortcut
-    vim.keymap.set('n', '<F11>', function()
+    vim.keymap.set('n', '<S-A-f>', function()
         vim.g.neovide_fullscreen = not vim.g.neovide_fullscreen
     end)
 end
