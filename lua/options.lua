@@ -77,6 +77,9 @@ if vim.g.neovide then
     -- vim.opt.guifont = "Inconsolata Nerd Font Mono:h16"
     vim.opt.guifont = "DepartureMono Nerd Font Propo,Inconsolata Nerd Font Mono:h12"
 
+    -- window size
+    vim.g.neovide_remember_window_size = true
+
     -- opacity & blur
     vim.g.neovide_opacity = 0.92
     vim.g.neovide_floating_blur_amount_x = 2.0
