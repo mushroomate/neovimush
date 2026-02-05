@@ -9,6 +9,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath)then
         lazypath,
     })
 end
+
 vim.opt.rtp:prepend(lazypath)
 
 local avante_build_cmd
@@ -24,6 +25,14 @@ end
 require("lazy").setup({
     -- translator
     "voldikss/vim-translator",
+
+    -- toggle fcitx,
+    {
+        "h-hg/fcitx.nvim",
+        cond = function()
+            return vim.fn.has("linux") == 1
+        end,
+    },
 
     -- theme
     "tanvirtin/monokai.nvim",
