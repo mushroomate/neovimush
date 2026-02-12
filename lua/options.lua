@@ -1,6 +1,8 @@
 -- default terminal
 local default_shell
-if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+local is_windows_os = vim.fn.has("win32") == 1 or  vim.fn.has("win64") == 1
+local is_linux_os = vim.fn.has("linux") == 1
+if is_windows_os then
     default_shell = "pwsh"
 else
     default_shell = "zsh"
@@ -81,7 +83,7 @@ if vim.g.neovide then
     vim.g.neovide_remember_window_size = true
 
     -- opacity & blur
-    vim.g.neovide_opacity = 0.92
+    vim.g.neovide_opacity = is_linux_os and 0.92 or 1.0
     vim.g.neovide_floating_blur_amount_x = 2.0
     vim.g.neovide_floating_blur_amount_y = 2.0
 
