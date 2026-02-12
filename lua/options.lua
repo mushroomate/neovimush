@@ -4,8 +4,10 @@ local is_windows_os = vim.fn.has("win32") == 1 or  vim.fn.has("win64") == 1
 local is_linux_os = vim.fn.has("linux") == 1
 if is_windows_os then
     default_shell = "pwsh"
-else
+elseif is_linux_os then
     default_shell = "zsh"
+else
+    default_shell = "sh"
 end
 vim.o.shell = default_shell
 
