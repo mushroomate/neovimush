@@ -1,5 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath)then
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
     vim.fn.system({
         "git",
         "clone",
@@ -20,7 +20,6 @@ else
     avante_build_cmd = "make"
 end
 
-
 -- require of the monoka
 require("lazy").setup({
     -- translator
@@ -40,8 +39,8 @@ require("lazy").setup({
         "loctvl842/monokai-pro.nvim",
         config = {
             day_night = {
-                enable = true, -- turn off by default
-                day_filter = "spectrum", -- classic | octagon | pro | machine | ristretto | spectrum
+                enable = true,             -- turn off by default
+                day_filter = "spectrum",   -- classic | octagon | pro | machine | ristretto | spectrum
                 night_filter = "spectrum", -- classic | octagon | pro | machine | ristretto | spectrum
             },
         },
@@ -50,8 +49,8 @@ require("lazy").setup({
     {
         -- treesitter for minimap dependency
         "nvim-treesitter/nvim-treesitter",
-        build = ":TSUpdate",  -- 自动安装更新解析器
-        event = { "BufReadPost", "BufNewFile" }, -- 延迟加载
+        build = ":TSUpdate",                               -- 自动安装更新解析器
+        event = { "BufReadPost", "BufNewFile" },           -- 延迟加载
         dependencies = {
             "nvim-treesitter/nvim-treesitter-textobjects", -- 增强文本对象（可选）
         },
@@ -59,8 +58,8 @@ require("lazy").setup({
             require("nvim-treesitter.configs").setup({
                 -- 核心功能配置
                 ensure_installed = { "lua", "python", "json", "yaml", "markdown", "bash", "rust" }, -- 按需添加语言
-                sync_install = false, -- 异步安装解析器
-                auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
+                sync_install = false,                                                               -- 异步安装解析器
+                auto_install = true,                                                                -- 自动安装缺失的解析器（首次打开文件时）
 
                 -- 启用高亮
                 highlight = {
@@ -69,9 +68,9 @@ require("lazy").setup({
                 },
 
                 -- 其他模块（按需启用）
-                indent = { enable = true },          -- 缩进（实验性）
+                indent = { enable = true },                -- 缩进（实验性）
                 incremental_selection = { enable = true }, -- 增量选择
-                textobjects = { enable = true },     -- 文本对象（如函数/类选择）
+                textobjects = { enable = true },           -- 文本对象（如函数/类选择）
             })
         end,
     },
@@ -79,8 +78,8 @@ require("lazy").setup({
     {
         "NeogitOrg/neogit",
         dependencies = {
-            "nvim-lua/plenary.nvim",         -- required
-            "sindrets/diffview.nvim",        -- optional - Diff integration
+            "nvim-lua/plenary.nvim",  -- required
+            "sindrets/diffview.nvim", -- optional - Diff integration
 
             -- Only one of these is needed.
             "nvim-telescope/telescope.nvim", -- optional
@@ -131,7 +130,6 @@ require("lazy").setup({
             },
         },
     },
-
     -- dashboard
     {
         "nvimdev/dashboard-nvim",
@@ -139,9 +137,12 @@ require("lazy").setup({
         config = function()
             require("dashboard").setup({
                 theme = "hypr",
+                week_header = {
+                    enable = true,
+                },
             })
         end,
-        dependencies = { {'nvim-tree/nvim-web-devicons'} }
+        dependencies = { { 'nvim-tree/nvim-web-devicons' } }
     },
 
     -- file manager
@@ -240,7 +241,7 @@ require("lazy").setup({
     -- vim.suda
     "lambdalisue/vim-suda",
 
-    -- AI auto-completion Exafunction/windsurf.nvim 
+    -- AI auto-completion Exafunction/windsurf.nvim
     -- https://github.com/Exafunction/windsurf.nvim
     {
         "Exafunction/windsurf.nvim",
@@ -299,7 +300,7 @@ require("lazy").setup({
             "MunifTanjim/nui.nvim",
             --- The below dependencies are optional,
             "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-            "zbirenbaum/copilot.lua", -- for providers='copilot'
+            "zbirenbaum/copilot.lua",      -- for providers='copilot'
             {
                 -- support for image pasting
                 "HakonHarnes/img-clip.nvim",
