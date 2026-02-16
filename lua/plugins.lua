@@ -136,7 +136,7 @@ require("lazy").setup({
         event = "VimEnter",
         config = function()
             require("dashboard").setup({
-                theme = "hypr",
+                theme = "hyper",
                 week_header = {
                     enable = true,
                 },
