@@ -16,6 +16,7 @@ vim.g.clipboard = 'osc52' --use system clipboard
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 vim.opt.mouse = 'a'       -- allow the mouse to be used in Nvim
 
+
 -- Tab
 vim.opt.tabstop = 4      -- number of visual spaces per TAB
 vim.opt.softtabstop = 4  -- number of speces in tab when editing
@@ -44,7 +45,33 @@ vim.opt.encoding = 'utf-8'
 if vim.g.neovide then
     -- clipboard
     vim.g.neovide_no_terminal_clipboard = true
-    if vim.fn.executable('wl-copy') == 1 then
+    if vim.fn.executable('win32yank') == 1 then
+        -- windows with win32yank
+        vim.g.clipboard = {
+            name = 'win32yank',
+            copy = {
+                ['+'] = { 'win32yank', '-i'},
+                ['*'] = { 'win32yank', '-i'},
+            },
+            paste = {
+                ['+'] = { 'win32yank', '-o', '--lf'},
+                ['*'] = { 'win32yank', '-o', '--lf'},
+            },
+        }
+    elseif vim.fn.executable('win32yank.exe') == 1 then
+        -- wsl with win32yank
+        vim.g.clipboard = {
+            name = 'win32yank.exe',
+            copy = {
+                ['+'] = { 'win32yank.exe', '-i', '--crlf' },
+                ['*'] = { 'win32yank.exe', '-i', '--crlf' },
+            },
+            paste = {
+                ['+'] = { 'win32yank.exe', '-o', '--lf'},
+                ['*'] = { 'win32yank.exe', '-o', '--lf'},
+            },
+        }
+    elseif vim.fn.executable('wl-copy') == 1 then
         -- wayland
         vim.g.clipboard = {
             name = 'wl-clipboard',
