@@ -170,7 +170,18 @@ servers.rust_analyzer = {
     },
 }
 servers.marksman = {}
-servers.omnisharp = {}
+servers.omnisharp = {
+    settings = {
+        RoslynExtensionsOptions = {
+            EnableInlayHintsForParameters = true,
+            EnableInlayHintsForLiteralParameters = true,
+            EnableInlayHintsForTypes = true,
+            EnableInlayHintsForImplicitVariableTypes = true,
+            EnableInlayHintsForLambdaParameterTypes = true,
+            EnableInlayHintsForImplicitObjectCreation = true,
+        }
+    }
+}
 servers.nil_ls = {}
 
 servers.lua_ls = {
@@ -178,6 +189,14 @@ servers.lua_ls = {
         Lua = {
             runtime = { version = 'LuaJIT' },
             telemetry = { enable = false },
+            hint = {
+                enable = true,
+                setType = true,
+                paramName = "All",
+                paramType = true,
+                await = true,
+                arrayIndex = "Disable",
+            },
         }
     }
 }
