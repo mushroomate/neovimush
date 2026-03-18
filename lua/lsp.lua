@@ -50,7 +50,7 @@ vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(_, bufnr)
+local on_attach = function(client, bufnr)
     -- Enable completion triggered by <c-x><c-o>
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -73,6 +73,9 @@ local on_attach = function(_, bufnr)
     vim.keymap.set("n", "<space>f", function()
         vim.lsp.buf.format({ async = true })
     end, bufopts)
+    vim.keymap.set('n', '<leader>th', function()
+        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }))
+    end, { desc = 'Toggle Inlay Hints', buffer = bufnr })
 end
 
 local cmp_nvim_lsp = require('cmp_nvim_lsp')
@@ -117,7 +120,55 @@ local lspconfig = require("lspconfig")
 local servers = {}
 
 servers.ruff = {}
-servers.rust_analyzer = {}
+servers.rust_analyzer = {
+    settings = {
+        ["rust-analyzer"] = {
+            inlayHints = {
+                -- 1. 类型提示：告诉插件是否显示变量、闭包的推导类型
+                typeHints = {
+                    -- 核心开关：显示 let x = 5; 这里的 i32
+                    enable = true,
+                    -- 是否隐藏闭包初始化时的类型
+                    hideClosureInitialization = false,
+                    -- 如果构造函数名已知（如 Vec::new()），是否隐藏类型提示
+                    hideNamedConstructor = false,
+                },
+
+                -- 2. 参数名提示：在调用函数时，显示形参的名字
+                parameterHints = {
+                    -- 核心开关：显示 test_func(a: 1, b: 2) 中的 a: 和 b:
+                    enable = true
+                },
+
+                -- 3. 链式调用提示：在使用迭代器或长链式调用时，显示每一步返回的类型
+                chainingHints = {
+                    -- 非常有用！能看到 .map().filter() 每一层的返回类型
+                    enable = true
+                },
+
+                -- 4. 结尾括号提示：在函数或循环的大括号结尾显示它是属于谁的
+                closingBraceHints = {
+                    enable = true,
+                    -- 只有当代码块超过 25 行时才显示（避免短代码太乱）
+                    minLines = 25
+                },
+
+                -- 5. 生命周期提示：通常建议关闭，除非你在深度优化引用逻辑
+                lifetimeElisionHints = {
+                    -- 设置为 "never" 因为这会让代码看起来非常臃肿
+                    enable = "never",
+                    useParameterNames = false
+                },
+
+                -- 6. 其他视觉控制
+                -- 在提示文字前是否渲染冒号 (例如显示 ": i32" 还是 "i32")
+                renderColons = true,
+                -- 提示信息的最大字符长度，超过会截断
+                maxLength = 25,
+            },
+        },
+    },
+}
 servers.marksman = {}
 servers.omnisharp = {}
 servers.nil_ls = {}
