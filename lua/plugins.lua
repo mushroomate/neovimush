@@ -120,6 +120,14 @@ require("lazy").setup({
     -- DAP
     require("dapcfg"),
 
+    -- Spellcheck
+    {
+        "nvimtools/none-ls.nvim",
+        dependencies = {
+            "davidmh/cspell.nvim",
+        },
+    },
+
     -- For vim configure LSP
     {
         "folke/lazydev.nvim",
@@ -149,7 +157,7 @@ require("lazy").setup({
                         ""
                     },
                     -- week_header = {
-                        -- enable = true,
+                    -- enable = true,
                     -- },
                 },
             })

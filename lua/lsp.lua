@@ -9,13 +9,37 @@ require('mason').setup({
 })
 
 
+-- None LSP tools
+local non_lsp_tools = {
+    'bacon',
+    'cspell',
+}
+
+local registry = require("mason-registry")
+vim.defer_fn(function()
+    for _, tool in ipairs(non_lsp_tools) do
+        if registry.has_package(tool) then
+            local pkg = registry.get_package(tool)
+            if not pkg:is_installed() then
+                print("Mason installing: " .. tool)
+                pkg:install()
+            end
+        else
+            print("Mason tool cannot found: " .. tool)
+        end
+    end
+end, 1000)
+
 --- including: 'prettier'
 local desired_lsps = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome' }
 
 local lsp_dependencies = {
-    omnisharp = { "unzip" }, -- omnisharp 需要 unzip 才能解压
-    nil_ls    = { "nix" },   -- nil_ls 只有在有 nix 的环境下才有意义
-    biome     = { "npm" },   -- biome 需要 npm
+    omnisharp     = { "unzip" }, -- omnisharp 需要 unzip 才能解压
+    nil_ls        = { "nix" },   -- nil_ls 只有在有 nix 的环境下才有意义
+    biome         = { "npm" },   -- biome 需要 npm
+    rust_analyzer = { "cargo" }, -- rust 依赖 cargo
+    bacon         = { "cargo" }, -- bacon 依赖 cargo
+
 }
 local ensure_installed_lsp = {}
 local missing_deps_msgs = {}
@@ -332,4 +356,37 @@ servers.biome = {
 for name, config in pairs(servers) do
     local final_config = vim.tbl_deep_extend("force", common_config, config)
     lspconfig[name].setup(final_config)
+end
+
+
+--- none lsp tools
+local null_ls_status, null_ls = pcall(require, "null-ls")
+local cspell_status, cspell = pcall(require, "cspell")
+
+if null_ls_status and cspell_status then
+    -- 自定义 cspell 的行为
+    local cspell_config = {
+        config = {
+            -- 告诉插件：当我要添加白名单单词时，写到哪个文件里
+            -- 如果当前目录下没有，它会自动在 ~/.config/nvim/ (或你的家目录) 找全局配置
+            find_json = function(_)
+                return vim.fn.expand("cspell.json")
+            end,
+        },
+    }
+
+    null_ls.setup({
+        sources = {
+            -- 1. 注入拼写检查的红波浪线
+            cspell.diagnostics.with({
+                config = cspell_config,
+                -- 诊断信息的级别，设为 HINT 或 WARN 避免满屏爆红太刺眼
+                diagnostics_postprocess = function(diagnostic)
+                    diagnostic.severity = vim.diagnostic.severity.HINT
+                end,
+            }),
+            -- 2. 注入“添加到字典”的快捷修复动作
+            cspell.code_actions.with({ config = cspell_config }),
+        },
+    })
 end
