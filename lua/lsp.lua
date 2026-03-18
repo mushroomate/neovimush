@@ -8,31 +8,53 @@ require('mason').setup({
     }
 })
 
---- todo: add Linter & Formatter modules
----       including: 'prettier'
-local ensure_installed_lsp = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls',
-    'biome' }
 
--- Discard LSPs which do not supported by Windows
-if vim.fn.has("win32") == 1 then
-    local windows_exclude = { 'nil_ls' }
+--- including: 'prettier'
+local desired_lsps = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome' }
 
-    for i = #ensure_installed_lsp, 1, -1 do
-        local current_tool = ensure_installed_lsp[i]
+local lsp_dependencies = {
+    omnisharp = { "unzip" }, -- omnisharp 需要 unzip 才能解压
+    nil_ls    = { "nix" },   -- nil_ls 只有在有 nix 的环境下才有意义
+    biome     = { "npm" },   -- biome 需要 npm
+}
+local ensure_installed_lsp = {}
+local missing_deps_msgs = {}
 
-        for _, exlude_name in ipairs(windows_exclude) do
-            if current_tool == exlude_name then
-                table.remove(ensure_installed_lsp, i)
+for _, lsp in ipairs(desired_lsps) do
+    local can_install = true
+    -- 检查前置依赖
+    if can_install and lsp_dependencies[lsp] then
+        for _, cmd in ipairs(lsp_dependencies[lsp]) do
+            if vim.fn.executable(cmd) == 0 then
+                can_install = false
+                table.insert(missing_deps_msgs, string.format("Skipped '%s' (Missing system cmd: %s)", lsp, cmd))
+                break
             end
         end
     end
-end
 
+    -- 如果条件都满足，才加入 Mason 的安装列表
+    if can_install then
+        table.insert(ensure_installed_lsp, lsp)
+    end
+end
 require('mason-lspconfig').setup({
     -- A list of servers to automatically install if they're not already installed
     ensure_installed = ensure_installed_lsp,
     automatic_installation = true,
 })
+
+-- 如果有因为缺少依赖而被跳过的 LSP，在启动时给出黄字警告
+if #missing_deps_msgs > 0 then
+    -- 延迟一小会儿显示，避免被启动画面盖住
+    vim.defer_fn(function()
+        vim.notify(
+            "LSP Setup Warnings:\n" .. table.concat(missing_deps_msgs, "\n"),
+            vim.log.levels.WARN,
+            { title = "LSP Dependencies" }
+        )
+    end, 2000)
+end
 
 -- rest of the configuration
 -- Set different settings for different languages' LSP
