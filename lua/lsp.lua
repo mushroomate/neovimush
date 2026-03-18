@@ -10,7 +10,7 @@ require('mason').setup({
 
 --- todo: add Linter & Formatter modules
 ---       including: 'prettier'
-local ensure_installed_lsp = { 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'biome' }
+local ensure_installed_lsp = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome'}
 
 -- Discard LSPs which do not supported by Windows
 if vim.fn.has("win32") == 1 then
@@ -119,7 +119,6 @@ local util = require("lspconfig.util")
 local lspconfig = require("lspconfig")
 local servers = {}
 
-servers.ruff = {}
 servers.rust_analyzer = {
     settings = {
         ["rust-analyzer"] = {
@@ -180,6 +179,49 @@ servers.omnisharp = {
             EnableInlayHintsForLambdaParameterTypes = true,
             EnableInlayHintsForImplicitObjectCreation = true,
         }
+    }
+}
+
+servers.ruff = {}
+
+servers.pyright = {
+    settings = {
+        python = {
+            analysis = {
+                typeCheckingMode = "basic", -- 推荐 basic，strict 可能会报太多类型警告
+                -- 开启 Pyright 的内联提示
+                inlayHints = {
+                    variableTypes = true,       -- 显示变量的推导类型
+                    functionReturnTypes = true, -- 显示函数的推导返回值类型
+                    callArgumentNames = true,   -- 显示函数调用的参数名
+                    pytestParameters = true,    -- pytest fixture 提示
+                },
+            },
+        },
+    },
+}
+
+-- 提取一个通用的 hint 配置表，给 js 和 ts 复用
+local ts_inlay_hints = {
+    includeInlayEnumMemberValueHints = true,
+    includeInlayFunctionLikeReturnTypeHints = true,
+    includeInlayFunctionParameterTypeHints = true,
+    includeInlayParameterNameHints = "all", -- 可选 "none" | "literals" | "all"
+    includeInlayParameterNameHintsWhenArgumentMatchesName = false, -- 如果参数名和传入的变量名一样，则隐藏（智能降噪）
+    includeInlayPropertyDeclarationTypeHints = true,
+    includeInlayVariableTypeHints = true,
+}
+
+servers.ts_ls = {
+    settings = {
+        -- TypeScript 的提示配置
+        typescript = {
+            inlayHints = ts_inlay_hints,
+        },
+        -- JavaScript 的提示配置
+        javascript = {
+            inlayHints = ts_inlay_hints,
+        },
     }
 }
 servers.nil_ls = {}
