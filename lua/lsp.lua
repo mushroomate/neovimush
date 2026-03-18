@@ -10,7 +10,8 @@ require('mason').setup({
 
 --- todo: add Linter & Formatter modules
 ---       including: 'prettier'
-local ensure_installed_lsp = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome'}
+local ensure_installed_lsp = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls',
+    'biome' }
 
 -- Discard LSPs which do not supported by Windows
 if vim.fn.has("win32") == 1 then
@@ -48,6 +49,8 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
+-- 创建一个全局的格式化自动命令组
+local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
@@ -76,6 +79,44 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', '<leader>th', function()
         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }))
     end, { desc = 'Toggle Inlay Hints', buffer = bufnr })
+
+
+    -- 1. Inlay Hints (手动开启逻辑)
+    if client.server_capabilities.inlayHintProvider then
+        vim.keymap.set('n', '<leader>th', function()
+            local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
+            vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = bufnr })
+            print("Inlay Hints: " .. (is_enabled and "OFF" or "ON"))
+        end, { desc = 'Toggle Inlay Hints', buffer = bufnr })
+    end
+
+    -- 2. 解决多 Formatter 冲突：明确分工
+    -- 严禁 pyright 和 ts_ls 参与格式化，把舞台留给 ruff 和 biome
+    if client.name == "pyright" or client.name == "ts_ls" then
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
+    end
+
+    -- 3. 配置保存时自动格式化 (Format on Save)
+    -- 如果当前接入的 LSP 支持格式化，则绑定保存事件
+    if client.server_capabilities.documentFormattingProvider then
+        -- 每次附加时，先清除旧的自动命令，防止多次触发
+        vim.api.nvim_clear_autocmds({ group = lsp_fmt_group, buffer = bufnr })
+
+        -- 创建在保存前 (BufWritePre) 触发的自动命令
+        vim.api.nvim_create_autocmd("BufWritePre", {
+            group = lsp_fmt_group,
+            buffer = bufnr,
+            callback = function()
+                -- 注意：保存时的格式化必须是同步的 (async = false)
+                -- 否则可能在格式化完成前文件就保存了
+                vim.lsp.buf.format({
+                    async = false,
+                    bufnr = bufnr
+                })
+            end,
+        })
+    end
 end
 
 local cmp_nvim_lsp = require('cmp_nvim_lsp')
@@ -206,7 +247,7 @@ local ts_inlay_hints = {
     includeInlayEnumMemberValueHints = true,
     includeInlayFunctionLikeReturnTypeHints = true,
     includeInlayFunctionParameterTypeHints = true,
-    includeInlayParameterNameHints = "all", -- 可选 "none" | "literals" | "all"
+    includeInlayParameterNameHints = "all",                        -- 可选 "none" | "literals" | "all"
     includeInlayParameterNameHintsWhenArgumentMatchesName = false, -- 如果参数名和传入的变量名一样，则隐藏（智能降噪）
     includeInlayPropertyDeclarationTypeHints = true,
     includeInlayVariableTypeHints = true,
