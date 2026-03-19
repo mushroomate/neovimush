@@ -124,8 +124,6 @@ end
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
 local opts = { noremap = true, silent = true }
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 
 -- 创建一个全局的格式化自动命令组
@@ -134,8 +132,6 @@ local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
 -- after the language server attaches to the current buffer
 local on_attach = function(client, buf_nr)
     -- Enable completion triggered by <c-x><c-o>
-    vim.api.nvim_buf_set_option(buf_nr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
     -- See `:help vim.lsp.*` for documentation on any of the below functions
     local buf_opts = { noremap = true, silent = true, buffer = buf_nr }
     vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, buf_opts)
@@ -381,7 +377,7 @@ servers.biome = {
             return git_root
         end
 
-        return util.path.dirname(fname)
+        return vim.fs.dirname(fname)
     end,
 }
 
