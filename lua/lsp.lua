@@ -123,8 +123,8 @@ end
 -- Customized on_attach function
 -- See `:help vim.diagnostic.*` for documentation on any of the below functions
 local opts = { noremap = true, silent = true }
-vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
-vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Show Diagnostics" }))
+vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, vim.tbl_extend("force", opts, { desc = "Diagnostics List" }))
 
 -- 创建一个全局的格式化自动命令组
 local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
@@ -133,27 +133,30 @@ local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
 local on_attach = function(client, buf_nr)
     -- Enable completion triggered by <c-x><c-o>
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    local buf_opts = { noremap = true, silent = true, buffer = buf_nr }
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, buf_opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, buf_opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, buf_opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, buf_opts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, buf_opts)
-    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, buf_opts)
-    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, buf_opts)
-    vim.keymap.set('n', '<space>wl', function()
-        print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-    end, buf_opts)
-    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, buf_opts)
-    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, buf_opts)
-    vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, buf_opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, buf_opts)
-    vim.keymap.set("n", "<space>f", function()
-        vim.lsp.buf.format({ async = true })
-    end, buf_opts)
-    vim.keymap.set('n', '<leader>th', function()
+    local map = function(mode, keys, func, desc)
+        vim.keymap.set(mode, keys, func, { buffer = buf_nr, desc = "LSP: " .. desc })
+    end
+    map('n', 'gD', vim.lsp.buf.declaration, "Goto Declaration")
+    map('n', 'gd', vim.lsp.buf.definition, "Goto Definition")
+    map('n', 'K', vim.lsp.buf.hover, "Hover Documentation")
+    map('n', 'gi', vim.lsp.buf.implementation, "Goto Implementation")
+    map('n', '<C-k>', vim.lsp.buf.signature_help, "Signature Help")
+
+    map('n', '<Space>D', vim.lsp.buf.type_definition, "Type Definition")
+    map('n', '<Space>rn', vim.lsp.buf.rename, "Rename Symbol")
+    map('n', '<Space>ca', vim.lsp.buf.code_action, "Code Action")
+    map('n', 'gr', vim.lsp.buf.references, "Goto References")
+    map('n', '<Space>f', function() vim.lsp.buf.format({ async = true }) end, "Format Document")
+    map('n', '<leader>th', function()
         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr }))
-    end, { desc = 'Toggle Inlay Hints', buffer = buf_nr })
+    end, 'Toggle Inlay Hints')
+
+    -- 工作区相关
+    map('n', '<Space>wa', vim.lsp.buf.add_workspace_folder, "Add Workspace Folder")
+    map('n', '<Space>wr', vim.lsp.buf.remove_workspace_folder, "Remove Workspace Folder")
+    map('n', '<Space>wl', function()
+        print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, "List Workspace Folders")
 
 
     -- 1. Inlay Hints (手动开启逻辑)
