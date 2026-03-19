@@ -132,41 +132,41 @@ vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
 local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr)
+local on_attach = function(client, buf_nr)
     -- Enable completion triggered by <c-x><c-o>
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    vim.api.nvim_buf_set_option(buf_nr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
     -- See `:help vim.lsp.*` for documentation on any of the below functions
-    local bufopts = { noremap = true, silent = true, buffer = bufnr }
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+    local buf_opts = { noremap = true, silent = true, buffer = buf_nr }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, buf_opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, buf_opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, buf_opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, buf_opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, buf_opts)
+    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, buf_opts)
+    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, buf_opts)
     vim.keymap.set('n', '<space>wl', function()
         print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-    end, bufopts)
-    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
-    vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+    end, buf_opts)
+    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, buf_opts)
+    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, buf_opts)
+    vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, buf_opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, buf_opts)
     vim.keymap.set("n", "<space>f", function()
         vim.lsp.buf.format({ async = true })
-    end, bufopts)
+    end, buf_opts)
     vim.keymap.set('n', '<leader>th', function()
-        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }))
-    end, { desc = 'Toggle Inlay Hints', buffer = bufnr })
+        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr }))
+    end, { desc = 'Toggle Inlay Hints', buffer = buf_nr })
 
 
     -- 1. Inlay Hints (手动开启逻辑)
     if client.server_capabilities.inlayHintProvider then
         vim.keymap.set('n', '<leader>th', function()
-            local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
-            vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = bufnr })
+            local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr })
+            vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = buf_nr })
             print("Inlay Hints: " .. (is_enabled and "OFF" or "ON"))
-        end, { desc = 'Toggle Inlay Hints', buffer = bufnr })
+        end, { desc = 'Toggle Inlay Hints', buffer = buf_nr })
     end
 
     -- 2. 解决多 Formatter 冲突：明确分工
@@ -180,18 +180,18 @@ local on_attach = function(client, bufnr)
     -- 如果当前接入的 LSP 支持格式化，则绑定保存事件
     if client.server_capabilities.documentFormattingProvider then
         -- 每次附加时，先清除旧的自动命令，防止多次触发
-        vim.api.nvim_clear_autocmds({ group = lsp_fmt_group, buffer = bufnr })
+        vim.api.nvim_clear_autocmds({ group = lsp_fmt_group, buffer = buf_nr })
 
         -- 创建在保存前 (BufWritePre) 触发的自动命令
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = lsp_fmt_group,
-            buffer = bufnr,
+            buffer = buf_nr,
             callback = function()
                 -- 注意：保存时的格式化必须是同步的 (async = false)
                 -- 否则可能在格式化完成前文件就保存了
                 vim.lsp.buf.format({
                     async = false,
-                    bufnr = bufnr
+                    bufnr = buf_nr
                 })
             end,
         })
