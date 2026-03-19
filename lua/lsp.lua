@@ -31,7 +31,8 @@ vim.defer_fn(function()
 end, 1000)
 
 --- including: 'prettier'
-local desired_lsps = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome' }
+local desired_lsps = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome',
+    'slint' }
 
 local lsp_dependencies = {
     omnisharp     = { "unzip" }, -- omnisharp 需要 unzip 才能解压
