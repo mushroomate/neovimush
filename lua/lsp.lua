@@ -53,7 +53,9 @@ local lsp_dependencies = {
     omnisharp     = { "unzip" }, -- omnisharp 需要 unzip 才能解压
     nil_ls        = { "nix" },   -- nil_ls 只有在有 nix 的环境下才有意义
     biome         = { "npm" },   -- biome 需要 npm
+    ts_ls         = { "npm" },
     rust_analyzer = { "cargo" }, -- rust 依赖 cargo
+    pyright       = { "npm" },
 }
 
 local ensure_installed_lsp = {}
