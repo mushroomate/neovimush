@@ -424,6 +424,19 @@ require("lazy").setup({
             -- vim.api.nvim_set_hl(0, 'CodewindowBorder', { fg = '#ffff00' })
         end
     },
+
+    -- which key
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        init = function()
+            vim.o.timeout = true
+            vim.o.timeoutlen = 300 -- 按下前缀键后等待 300 毫秒弹出提示面板
+        end,
+        opts = {
+            -- 在这里配置面板的样式、边框等
+        }
+    },
     -- others...
 
 })
