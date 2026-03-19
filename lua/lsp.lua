@@ -39,11 +39,11 @@ local desired_lsps = {
     'rust_analyzer',
     'omnisharp',
     'nil_ls',
-    'slint'
+    'slint_lsp'
 }
 
 local lsp_allowed_users = {
-    slint = { "mein" }, -- 只有用户名是 mein 的机器才会装 slint
+    slint_lsp = { "mein" }, -- 只有用户名是 mein 的机器才会装 slint
     omnisharp = { "mein" },
     rust_analyzer = { "mein" },
     nil_ls = { "mein" },
