@@ -197,6 +197,18 @@ local on_attach = function(client, buf_nr)
     end
 end
 
+-- which-key group setting
+local wk_status, wk = pcall(require, "which-key")
+if wk_status then
+    wk.add({
+        { "<space>w",  group = "Workspace" },
+        { "<space>r",  group = "Rename" },
+        { "<space>c",  group = "Code Action" },
+        { "<leader>a", group = "Avante" },
+    })
+end
+
+
 local cmp_nvim_lsp = require('cmp_nvim_lsp')
 local cmp = require('cmp')
 local lsp_capabilities = cmp_nvim_lsp.default_capabilities()
