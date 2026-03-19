@@ -31,8 +31,23 @@ vim.defer_fn(function()
 end, 1000)
 
 --- including: 'prettier'
-local desired_lsps = { 'pyright', 'ruff', 'lua_ls', 'rust_analyzer', 'marksman', 'omnisharp', 'nil_ls', 'ts_ls', 'biome',
-    'slint' }
+local desired_lsps = {
+    'lua_ls',
+    'marksman',
+    'pyright', 'ruff',
+    'ts_ls', 'biome',
+    'rust_analyzer',
+    'omnisharp',
+    'nil_ls',
+    'slint'
+}
+
+local lsp_allowed_users = {
+    slint = { "mein" }, -- 只有用户名是 mein 的机器才会装 slint
+    omnisharp = { "mein" },
+    rust_analyzer = { "mein" },
+    nil_ls = { "mein" },
+}
 
 local lsp_dependencies = {
     omnisharp     = { "unzip" }, -- omnisharp 需要 unzip 才能解压
@@ -42,11 +57,30 @@ local lsp_dependencies = {
     bacon         = { "cargo" }, -- bacon 依赖 cargo
 
 }
+
 local ensure_installed_lsp = {}
-local missing_deps_msgs = {}
+local missing_deps_msgs = {} -- 存警告信息
+local skip_logs = {}         -- 存普通日志信息
+local current_user = os.getenv("USER") or os.getenv("USERNAME") or "unknown_user"
 
 for _, lsp in ipairs(desired_lsps) do
     local can_install = true
+    -- 检查用户白名单
+    if lsp_allowed_users[lsp] then
+        local user_matched = false
+        for _, allowed_user in ipairs(lsp_allowed_users[lsp]) do
+            if current_user == allowed_user then
+                user_matched = true
+                break
+            end
+        end
+
+        -- 如果当前用户不在白名单里，静默跳过
+        if not user_matched then
+            can_install = false
+            table.insert(skip_logs, string.format("Skipped '%s' (User '%s' ignored)", lsp, current_user))
+        end
+    end
     -- 检查前置依赖
     if can_install and lsp_dependencies[lsp] then
         for _, cmd in ipairs(lsp_dependencies[lsp]) do
