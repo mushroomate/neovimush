@@ -140,7 +140,12 @@ local on_attach = function(client, buf_nr)
     end
     map('n', 'gD', vim.lsp.buf.declaration, "Goto Declaration")
     map('n', 'gd', vim.lsp.buf.definition, "Goto Definition")
-    map('n', 'K', vim.lsp.buf.hover, "Hover Documentation")
+    -- map('n', 'K', vim.lsp.buf.hover, "Hover Documentation")
+    -- map('n', 'K', function()
+    -- require('lspsaga.hover').render_hover_doc()
+    -- end,
+    -- "Hover Documentation")
+    map('n', 'K', '<Cmd>Lspsaga hover_doc<CR>', "Hover Documentation")
     map('n', 'gi', vim.lsp.buf.implementation, "Goto Implementation")
     map('n', '<C-k>', vim.lsp.buf.signature_help, "Signature Help")
 
