@@ -112,7 +112,7 @@ if #missing_deps_msgs > 0 then
             vim.log.levels.WARN,
             { title = "LSP Dependencies" }
         )
-    end, 2000) -- 将这个值改成500ms 或 1000
+    end, 500) -- 将这个值改成500ms 或 1000
 end
 
 
