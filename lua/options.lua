@@ -1,6 +1,6 @@
 -- default terminal
 local default_shell
-local is_windows_os = vim.fn.has("win32") == 1 or  vim.fn.has("win64") == 1
+local is_windows_os = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
 local is_linux_os = vim.fn.has("linux") == 1
 if is_windows_os then
     default_shell = "pwsh"
@@ -50,12 +50,12 @@ if vim.g.neovide then
         vim.g.clipboard = {
             name = 'win32yank',
             copy = {
-                ['+'] = { 'win32yank', '-i'},
-                ['*'] = { 'win32yank', '-i'},
+                ['+'] = { 'win32yank', '-i' },
+                ['*'] = { 'win32yank', '-i' },
             },
             paste = {
-                ['+'] = { 'win32yank', '-o', '--lf'},
-                ['*'] = { 'win32yank', '-o', '--lf'},
+                ['+'] = { 'win32yank', '-o', '--lf' },
+                ['*'] = { 'win32yank', '-o', '--lf' },
             },
         }
     elseif vim.fn.executable('win32yank.exe') == 1 then
@@ -67,8 +67,8 @@ if vim.g.neovide then
                 ['*'] = { 'win32yank.exe', '-i', '--crlf' },
             },
             paste = {
-                ['+'] = { 'win32yank.exe', '-o', '--lf'},
-                ['*'] = { 'win32yank.exe', '-o', '--lf'},
+                ['+'] = { 'win32yank.exe', '-o', '--lf' },
+                ['*'] = { 'win32yank.exe', '-o', '--lf' },
             },
         }
     elseif vim.fn.executable('wl-copy') == 1 then
@@ -106,7 +106,7 @@ if vim.g.neovide then
 
     -- font setting
     -- vim.opt.guifont = "Inconsolata Nerd Font Mono:h16"
-    vim.opt.guifont = "DepartureMono Nerd Font Propo,Inconsolata Nerd Font Mono:h12"
+    vim.opt.guifont = "DepartureMono Nerd Font Propo,Inconsolata Nerd Font Mono:h14"
 
     -- window size
     vim.g.neovide_remember_window_size = true
