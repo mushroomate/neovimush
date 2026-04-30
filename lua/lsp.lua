@@ -173,10 +173,10 @@ if saga_ok then
                 'textDocument/implementations',
                 'textDocument/definitions',
             },
-            default = 'ref+imp', -- 默认同时查引用和实现
+            default = 'def+ref+imp', -- 默认同时查定义、引用和实现
             keys = {
-                vsplit = 'v',    -- 垂直分屏打开
-                split = 's',     -- 水平分屏打开
+                vsplit = 'v',        -- 垂直分屏打开
+                split = 's',         -- 水平分屏打开
                 quit = { 'q', '<Esc>' },
             },
         },
@@ -185,10 +185,10 @@ if saga_ok then
         -- 符号大纲 (Outline)
         -- -------------------------------
         outline = {
-            layout = 'normal',      -- 使用分屏窗口，而不是浮动窗口
-            win_position = 'right', -- 放在右侧
-            win_width = 40,
-            auto_preview = true,    -- 光标移动时自动预览符号位置
+            layout = 'normal',     -- 使用分屏窗口，而不是浮动窗口
+            win_position = 'left', -- 放在右侧
+            win_width = 30,
+            auto_preview = true,   -- 光标移动时自动预览符号位置
             keys = {
                 jump = '<CR>',
                 quit = { 'q', '<Esc>' },
@@ -270,6 +270,17 @@ local on_attach = function(client, buf_nr)
 
     -- 当前行诊断浮动窗口 (<Space>e)
     map('n', '<Space>e', '<Cmd>Lspsaga show_line_diagnostics<CR>', "Saga Line Diagnostics")
+
+    -- 使用 lspsaga 的诊断跳转（比原生的 [d/]d 更流畅）
+    vim.keymap.set('n', '[d', '<Cmd>Lspsaga diagnostic_jump_prev<CR>', { silent = true, desc = 'Previous Diagnostic' })
+    vim.keymap.set('n', ']d', '<Cmd>Lspsaga diagnostic_jump_next<CR>', { silent = true, desc = 'Next Diagnostic' })
+
+    -- lspsaga 浮动终端
+    map('n', '<Space>t', '<Cmd>Lspsaga term_toggle<CR>', "Lspsaga float terminal")
+
+    -- lspsgag 查找器
+    map('n', '<leader>f', '<Cmd>Lspsaga finder<CR>', "lspsaga Finder")
+
 
     -- 签名帮助 (保留原生，lspsaga 未提供更好的 UI)
     map('n', '<C-k>', vim.lsp.buf.signature_help, "Signature Help")
