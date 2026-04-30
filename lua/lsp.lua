@@ -136,16 +136,16 @@ if saga_ok then
         -- 增强：支持数字快捷键、预览 diff
         -- -------------------------------
         code_action = {
-            num_shortcut = true,      -- 按数字快速选择动作
-            show_server_name = false, -- 不显示 LSP 服务器名
+            num_shortcut = true,     -- 按数字快速选择动作
+            show_server_name = true, -- 显示 LSP 服务器名
             keys = {
-                exec = '<CR>',        -- 执行当前动作
+                exec = '<CR>',       -- 执行当前动作
                 quit = { 'q', '<Esc>' },
             },
             lightbulb = { -- 当有可用动作时，行号边显示灯泡
-                enable = true,
+                enable = false,
                 sign = true,
-                virtual_text = false,
+                virtual_text = true,
             },
         },
 
