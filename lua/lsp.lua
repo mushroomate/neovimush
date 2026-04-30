@@ -381,7 +381,7 @@ servers.lua_ls = {
 
 servers.biome = {
     filetypes = {
-        "javascript", "javascriptreact", "typescript", "typescript.tsx",
+        "javascript", "javascriptreact", "typescript", "typescriptreact",
         "json", "jsonc", "css", "svelte", "vue", "astro"
     },
     single_file_support = true,
