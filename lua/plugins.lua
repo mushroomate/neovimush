@@ -47,30 +47,62 @@ require("lazy").setup({
     },
 
     {
-        -- treesitter for minimap dependency
+        -- treesitter for minimap dependency and markdown rendering
         "nvim-treesitter/nvim-treesitter",
+        branch = 'main',
         build = ":TSUpdate",                               -- 自动安装更新解析器
         event = { "BufReadPost", "BufNewFile" },           -- 延迟加载
         dependencies = {
             "nvim-treesitter/nvim-treesitter-textobjects", -- 增强文本对象（可选）
+            branch = 'main',
+            event = 'VeryLazy',
+            config = function()
+                require 'nvim-treesitter-textobjects'.setup({
+                    select = { enable = true },
+                    swap = { enable = true },
+                    move = { enable = true },
+                })
+            end
         },
         config = function()
-            require("nvim-treesitter.configs").setup({
+            require("nvim-treesitter").setup({
                 -- 核心功能配置
-                ensure_installed = { "lua", "python", "json", "yaml", "markdown", "bash", "rust" }, -- 按需添加语言
-                sync_install = false,                                                               -- 异步安装解析器
-                auto_install = true,                                                                -- 自动安装缺失的解析器（首次打开文件时）
+                sync_install = false, -- 异步安装解析器
+                auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
 
                 -- 启用高亮
-                highlight = {
-                    enable = true,
-                    additional_vim_regex_highlighting = false, -- 禁用旧版 regex 高亮（提升性能）
-                },
+                -- highlight = {
+                -- enable = true,
+                -- additional_vim_regex_highlighting = false, -- 禁用旧版 regex 高亮（提升性能）
+                -- },
 
                 -- 其他模块（按需启用）
-                indent = { enable = true },                -- 缩进（实验性）
+                -- indent = { enable = true },                -- 缩进（实验性）
                 incremental_selection = { enable = true }, -- 增量选择
                 textobjects = { enable = true },           -- 文本对象（如函数/类选择）
+                init = function()
+                    local ensure_installed = {
+                        "lua", "python", "json", "yaml", "markdown", "bash", "rust"
+                    } -- 按需添加语言
+                    local alreadyInstalled = require('nvim-treesitter.config').get_installed()
+                    local parsersToInstall = vim.iter(ensure_installed)
+                        :filter(function(parser)
+                            return not vim.tbl_contains(alreadyInstalled, parser)
+                        end)
+                        :totable()
+                    require('nvim-treesitter').install(parsersToInstall)
+
+                    vim.api.nvim_create_autocmd('FileType', {
+                        callback = function()
+                            -- Enable treesitter highlighting and disable regex syntax
+                            pcall(vim.treesitter.start)
+                            -- Enable treesitter-based indentation
+                            if pcall(vim.treesitter.foldexpr) then
+                                vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                            end
+                        end,
+                    })
+                end,
             })
         end,
     },
@@ -427,7 +459,8 @@ require("lazy").setup({
 
             -- optional: custom Highlites set
             -- vim.api.nvim_set_hl(0, 'CodewindowBorder', { fg = '#ffff00' })
-        end
+        end,
+        enabled = false, -- disabled for new version of nvim-treesitter
     },
 
     -- which key
