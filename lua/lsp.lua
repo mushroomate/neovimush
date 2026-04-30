@@ -112,106 +112,225 @@ if #missing_deps_msgs > 0 then
             vim.log.levels.WARN,
             { title = "LSP Dependencies" }
         )
-    end, 2000)
+    end, 2000) -- 将这个值改成500ms 或 1000
 end
 
--- rest of the configuration
--- Set different settings for different languages' LSP
--- LSP list: https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md
--- How to use setup({}): https://github.com/neovim/nvim-lspconfig/wiki/Understanding-setup-%7B%7D
---     - the settings table is sent to the LSP
---     - on_attach: a lua callback function to run after LSP attaches to a given buffer
 
--- Customized on_attach function
--- See `:help vim.diagnostic.*` for documentation on any of the below functions
+-- lspsaga 配置  确保在 plugins.lua 中有对应的插件声明
+local saga_ok, saga = pcall(require, 'lspsaga')
+if saga_ok then
+    saga.setup({
+        -- -------------------------------
+        -- 悬停文档 (Hover)
+        -- -------------------------------
+        hover = {
+            max_width = 0.6,  -- 窗口宽度占编辑器比例
+            max_height = 0.6, -- 窗口高度比例
+            -- 边框与标题
+            border = 'rounded',
+            title = ' Documentation ',
+        },
+
+        -- -------------------------------
+        -- 代码动作 (Code Action)
+        -- 增强：支持数字快捷键、预览 diff
+        -- -------------------------------
+        code_action = {
+            num_shortcut = true,      -- 按数字快速选择动作
+            show_server_name = false, -- 不显示 LSP 服务器名
+            keys = {
+                exec = '<CR>',        -- 执行当前动作
+                quit = { 'q', '<Esc>' },
+            },
+            lightbulb = { -- 当有可用动作时，行号边显示灯泡
+                enable = true,
+                sign = true,
+                virtual_text = false,
+            },
+        },
+
+        -- -------------------------------
+        -- 重命名 (Rename)
+        -- -------------------------------
+        rename = {
+            in_select = true, -- 启动时自动高亮选中
+            auto_save = false,
+            keys = {
+                exec = '<CR>',
+                quit = { '<C-c>', '<Esc>' },
+            },
+        },
+
+        -- -------------------------------
+        -- 查找器 (Finder) — 引用/实现/定义预览
+        -- 快捷键 gr, gi 将调用此模块
+        -- -------------------------------
+        finder = {
+            max_height = 0.5,
+            left_width = 0.4, -- 左侧预览窗口宽度
+            methods = {       -- 可搜索的方法
+                'textDocument/references',
+                'textDocument/implementations',
+                'textDocument/definitions',
+            },
+            default = 'ref+imp', -- 默认同时查引用和实现
+            keys = {
+                vsplit = 'v',    -- 垂直分屏打开
+                split = 's',     -- 水平分屏打开
+                quit = { 'q', '<Esc>' },
+            },
+        },
+
+        -- -------------------------------
+        -- 符号大纲 (Outline)
+        -- -------------------------------
+        outline = {
+            layout = 'normal',      -- 使用分屏窗口，而不是浮动窗口
+            win_position = 'right', -- 放在右侧
+            win_width = 40,
+            auto_preview = true,    -- 光标移动时自动预览符号位置
+            keys = {
+                jump = '<CR>',
+                quit = { 'q', '<Esc>' },
+            },
+        },
+
+        -- -------------------------------
+        -- 诊断增强 (Diagnostic)
+        -- 提供漂亮的浮动窗口和跳转列表
+        -- -------------------------------
+        diagnostic = {
+            show_layout = 'float', -- 浮动窗口显示
+            max_show_width = 0.7,
+            wrap_long_lines = true,
+            auto_preview = true,      -- 跳转时自动预览
+            jump_num_shortcut = true, -- 数字跳转
+            keys = {
+                exec = 'o',
+                quit = { 'q', '<Esc>' },
+            },
+        },
+
+        -- -------------------------------
+        -- 面包屑导航 (Winbar)
+        -- 在顶部显示当前上下文，如 `struct Foo > fn bar`
+        -- -------------------------------
+        symbol_in_winbar = {
+            enable = true,
+            folder_level = 2,
+            separator = ' > ',
+            color_mode = true,
+        },
+    })
+
+    -- 额外设置：诊断跳转快捷键（默认已配置 [[ 和 ]] 跳转到上一个/下一个诊断）
+    -- 也可以在 on_attach 中不设置，直接使用 lspsaga 自带的映射
+end
+
+
+-- 快捷键映射
 local opts = { noremap = true, silent = true }
-vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "Show Diagnostics" }))
+
+-- 仅保留原生诊断相关的一个备用映射（发送到位置列表）
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, vim.tbl_extend("force", opts, { desc = "Diagnostics List" }))
 
--- 创建一个全局的格式化自动命令组
+-- 格式化自动命令组
 local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
--- Use an on_attach function to only map the following keys
--- after the language server attaches to the current buffer
+
 local on_attach = function(client, buf_nr)
-    -- Enable completion triggered by <c-x><c-o>
-    -- See `:help vim.lsp.*` for documentation on any of the below functions
     local map = function(mode, keys, func, desc)
         vim.keymap.set(mode, keys, func, { buffer = buf_nr, desc = "LSP: " .. desc })
     end
+
+    -- -------------------------------
+    -- 导航：保留原生跳转（简洁可靠）
+    -- -------------------------------
     map('n', 'gD', vim.lsp.buf.declaration, "Goto Declaration")
-    map('n', 'gd', vim.lsp.buf.definition, "Goto Definition")
-    -- map('n', 'K', vim.lsp.buf.hover, "Hover Documentation")
-    -- map('n', 'K', function()
-    -- require('lspsaga.hover').render_hover_doc()
-    -- end,
-    -- "Hover Documentation")
-    map('n', 'K', '<Cmd>Lspsaga hover_doc<CR>', "Hover Documentation")
-    map('n', 'gi', vim.lsp.buf.implementation, "Goto Implementation")
+    map('n', '<Space>D', vim.lsp.buf.type_definition, "Type Definition")
+
+    -- -------------------------------
+    -- lspsaga 接管的功能
+    -- -------------------------------
+    -- 悬停文档 (K)
+    map('n', 'K', '<Cmd>Lspsaga hover_doc<CR>', "Saga Hover")
+
+    -- 定义预览 (gd)
+    -- 使用 peek_definition 在浮动窗口中预览，按 Enter 可跳转
+    map('n', 'gd', '<Cmd>Lspsaga peek_definition<CR>', "Saga Peek Definition")
+
+    -- 查找引用/实现 (gr, gi)
+    map('n', 'gr', '<Cmd>Lspsaga finder<CR>', "Saga Finder (refs+impls)")
+    map('n', 'gi', '<Cmd>Lspsaga finder impl<CR>', "Saga Finder (impls only)")
+
+    -- 代码动作 (<Space>ca)
+    map('n', '<Space>ca', '<Cmd>Lspsaga code_action<CR>', "Saga Code Action")
+
+    -- 重命名 (<Space>rn)
+    map('n', '<Space>rn', '<Cmd>Lspsaga rename<CR>', "Saga Rename")
+
+    -- 当前行诊断浮动窗口 (<Space>e)
+    map('n', '<Space>e', '<Cmd>Lspsaga show_line_diagnostics<CR>', "Saga Line Diagnostics")
+
+    -- 签名帮助 (保留原生，lspsaga 未提供更好的 UI)
     map('n', '<C-k>', vim.lsp.buf.signature_help, "Signature Help")
 
-    map('n', '<Space>D', vim.lsp.buf.type_definition, "Type Definition")
-    map('n', '<Space>rn', vim.lsp.buf.rename, "Rename Symbol")
-    map('n', '<Space>ca', vim.lsp.buf.code_action, "Code Action")
-    map('n', 'gr', vim.lsp.buf.references, "Goto References")
+    -- 格式化
     map('n', '<Space>f', function() vim.lsp.buf.format({ async = true }) end, "Format Document")
+
+    -- Inlay Hints 切换
     map('n', '<leader>th', function()
-        vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr }))
+        vim.lsp.inlay_hint.enable(
+            not vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr }),
+            { bufnr = buf_nr }
+        )
     end, 'Toggle Inlay Hints')
 
-    -- 工作区相关
+    -- Winbar 面包屑导航开关（如果你想临时关闭）
+    map('n', '<leader>tw', '<Cmd>Lspsaga winbar_toggle<CR>', 'Toggle Winbar')
+
+    -- 大纲侧边栏
+    map('n', '<leader>o', '<Cmd>Lspsaga outline<CR>', "Saga Outline")
+
+    -- 工作区管理
     map('n', '<Space>wa', vim.lsp.buf.add_workspace_folder, "Add Workspace Folder")
     map('n', '<Space>wr', vim.lsp.buf.remove_workspace_folder, "Remove Workspace Folder")
     map('n', '<Space>wl', function()
         print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
     end, "List Workspace Folders")
 
-
-    -- 1. Inlay Hints (手动开启逻辑)
-    if client.server_capabilities.inlayHintProvider then
-        vim.keymap.set('n', '<leader>th', function()
-            local is_enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = buf_nr })
-            vim.lsp.inlay_hint.enable(not is_enabled, { bufnr = buf_nr })
-            print("Inlay Hints: " .. (is_enabled and "OFF" or "ON"))
-        end, { desc = 'Toggle Inlay Hints', buffer = buf_nr })
-    end
-
-    -- 2. 解决多 Formatter 冲突：明确分工
-    -- 严禁 pyright 和 ts_ls 参与格式化，把舞台留给 ruff 和 biome
+    -- 多 Formatter 冲突处理
     if client.name == "pyright" or client.name == "ts_ls" then
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false
     end
 
-    -- 3. 配置保存时自动格式化 (Format on Save)
-    -- 如果当前接入的 LSP 支持格式化，则绑定保存事件
+    -- 保存时自动格式化
     if client.server_capabilities.documentFormattingProvider then
-        -- 每次附加时，先清除旧的自动命令，防止多次触发
         vim.api.nvim_clear_autocmds({ group = lsp_fmt_group, buffer = buf_nr })
-
-        -- 创建在保存前 (BufWritePre) 触发的自动命令
         vim.api.nvim_create_autocmd("BufWritePre", {
             group = lsp_fmt_group,
             buffer = buf_nr,
             callback = function()
-                -- 注意：保存时的格式化必须是同步的 (async = false)
-                -- 否则可能在格式化完成前文件就保存了
-                vim.lsp.buf.format({
-                    async = false,
-                    bufnr = buf_nr
-                })
+                vim.lsp.buf.format({ async = false, bufnr = buf_nr })
             end,
         })
     end
 end
 
--- which-key group setting
+-- Which-Key 分组
 local wk_status, wk = pcall(require, "which-key")
 if wk_status then
     wk.add({
-        { "<space>w",  group = "Workspace" },
-        { "<space>r",  group = "Rename" },
-        { "<space>c",  group = "Code Action" },
-        { "<leader>a", group = "Avante" },
+        { "<space>w",   group = "Workspace" },
+        { "<space>r",   group = "Rename/Symbol" },
+        { "<space>c",   group = "Code Action" },
+        { "<leader>a",  group = "Avante" },
+        { "<leader>l",  group = "LSP Tools" }, -- 可用来存放 leader 下的 LSP 功能
+        { "<leader>t",  group = "Toggle" },
+        -- 可以进一步细化
+        { "<leader>o",  desc = "Outline" },
+        { "<leader>th", desc = "Toggle Inlay Hints" },
+        { "<leader>tw", desc = "Toggle Winbar" },
     })
 end
 
@@ -293,7 +412,7 @@ servers.rust_analyzer = {
                     minLines = 25
                 },
 
-                -- 5. 生命周期提示：通常建议关闭，除非你在深度优化引用逻辑
+                -- 5. 生命周期提示：通常建议关闭，除非在深度优化引用逻辑
                 lifetimeElisionHints = {
                     -- 设置为 "never" 因为这会让代码看起来非常臃肿
                     enable = "never",
