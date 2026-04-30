@@ -253,7 +253,6 @@ local common_config = {
 
 
 local util = require("lspconfig.util")
-local lspconfig = require("lspconfig")
 local servers = {}
 
 servers.rust_analyzer = {
@@ -405,7 +404,8 @@ servers.biome = {
 
 for name, config in pairs(servers) do
     local final_config = vim.tbl_deep_extend("force", common_config, config)
-    lspconfig[name].setup(final_config)
+    vim.lsp.config(name, final_config)
+    vim.lsp.enable(name)
 end
 
 
