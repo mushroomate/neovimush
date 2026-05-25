@@ -18,3 +18,11 @@
 
 - [AGENTS.md](AGENTS.md) — 配置结构与约定
 - [HEALTH-CHECK.md](HEALTH-CHECK.md) — 配置体检报告
+
+## Neovim 0.12+ 兼容说明
+
+使用 `vim.lsp.enable()` 新 API 配置 LSP 时注意：
+
+- **`cmd` 需显式指定**：新 API 不会自动拼接 `lsp-proxy` 等参数，部分 LSP（如 biome）必须显式设 `cmd`
+- **`workspace_required = false`**：新 API 默认 `true`，会阻止无工作区时启动 LSP，需配合 `single_file_support`
+- **`root_dir` 参数类型**：新 API 传入的是 buffer number（数字），需用 `vim.api.nvim_buf_get_name(bufnr)` 转为文件路径后再传给 `util.root_pattern()`

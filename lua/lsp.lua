@@ -171,7 +171,12 @@ local on_attach = function(client, buf_nr)
     map('n', '<C-k>', vim.lsp.buf.signature_help, "Signature Help")
 
     -- 格式化
-    map('n', '<Space>f', function() vim.lsp.buf.format({ async = true }) end, "Format Document")
+    map('n', '<Space>f', function()
+        local ok, err = pcall(vim.lsp.buf.format, { async = true, bufnr = buf_nr })
+        if not ok then
+            vim.notify("Format failed: " .. tostring(err), vim.log.levels.ERROR)
+        end
+    end, "Format Document")
 
     -- Inlay Hints 切换
     map('n', '<leader>th', function()
