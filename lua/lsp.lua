@@ -361,10 +361,16 @@ servers.lua_ls = {
 }
 
 servers.biome = {
+    -- Neovim 0.12+: vim.lsp.enable() 不会自动拼接 'lsp-proxy' 参数，
+    -- 只传 biome 会导致进程秒退，必须显式指定 cmd。
+    cmd = { 'biome', 'lsp-proxy' },
     filetypes = {
         "javascript", "javascriptreact", "typescript", "typescriptreact",
         "graphql", "css", "svelte", "vue", "astro"
     },
+    -- Neovim 0.12+: 默认 workspace_required = true 会阻止单文件/无工作区时启动 LSP，
+    -- 旧 API 的 single_file_support 不生效，必须设为 false。
+    workspace_required = false,
     single_file_support = true,
     -- Neovim 0.12+ 的 root_dir 必须是异步回调风格 (bufnr, on_dir)
     root_dir = function(bufnr, on_dir)
