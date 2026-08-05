@@ -233,10 +233,6 @@ local opts = { noremap = true, silent = true }
 
 -- 仅保留原生诊断相关的一个备用映射（发送到位置列表）
 vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, vim.tbl_extend("force", opts, { desc = "Diagnostics List" }))
-
--- 格式化自动命令组
-local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
-
 local on_attach = function(client, buf_nr)
     local map = function(mode, keys, func, desc)
         vim.keymap.set(mode, keys, func, { buffer = buf_nr, desc = "LSP: " .. desc })
@@ -313,18 +309,6 @@ local on_attach = function(client, buf_nr)
     if client.name == "pyright" or client.name == "ts_ls" then
         client.server_capabilities.documentFormattingProvider = false
         client.server_capabilities.documentRangeFormattingProvider = false
-    end
-
-    -- 保存时自动格式化
-    if client.server_capabilities.documentFormattingProvider then
-        vim.api.nvim_clear_autocmds({ group = lsp_fmt_group, buffer = buf_nr })
-        vim.api.nvim_create_autocmd("BufWritePre", {
-            group = lsp_fmt_group,
-            buffer = buf_nr,
-            callback = function()
-                vim.lsp.buf.format({ async = false, bufnr = buf_nr })
-            end,
-        })
     end
 end
 
