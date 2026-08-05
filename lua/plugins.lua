@@ -310,25 +310,29 @@ require("lazy").setup({
     -- vim.suda
     "lambdalisue/vim-suda",
 
-    -- AI auto-completion Exafunction/windsurf.nvim
-    -- https://github.com/Exafunction/windsurf.nvim
+    -- AI code completion via minuet-ai.nvim
     {
-        "Exafunction/windsurf.nvim",
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "hrsh7th/nvim-cmp",
-        },
+        "milanglacier/minuet-ai.nvim",
+        cond = function()
+            local has_key = vim.fn.environ()["DEEPSEEK_API_KEY"] ~= nil
+            if not has_key then
+                vim.notify(
+                    "[minuet-ai] $DEEPSEEK_API_KEY 未设置，AI 补全功能已跳过",
+                    vim.log.levels.INFO
+                )
+            end
+            return has_key
+        end,
         config = function()
-            require("codeium").setup({
+            require("minuet").setup({
+                provider = "openai_fim_compatible",
+                provider_options = {
+                    openai_fim_compatible = {
+                        api_key = "DEEPSEEK_API_KEY",
+                    },
+                },
             })
         end,
-        opts = {
-            api = {
-                host = "https://api.deepseek.com",
-                port = 443,
-                path = "autocomplete",
-            }
-        },
     },
 
     -- AI plugin /avante.nvim

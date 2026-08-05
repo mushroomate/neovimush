@@ -350,6 +350,19 @@ local cmp_nvim_lsp = require('cmp_nvim_lsp')
 local cmp = require('cmp')
 local lsp_capabilities = cmp_nvim_lsp.default_capabilities()
 
+local cmp_sources = {
+    { name = 'lazydev' },
+    { name = 'nvim_lsp' },
+    -- { name = 'vsnip' }, -- For vsnip users.
+    { name = 'luasnip' }, -- For luasnip users.
+    -- { name = 'ultisnips' }, -- For ultisnips users.
+    -- { name = 'snippy' }, -- For snippy users.
+}
+
+if vim.fn.environ()["DEEPSEEK_API_KEY"] ~= nil then
+    table.insert(cmp_sources, { name = 'minuet' })
+end
+
 cmp.setup({
     snippet = {
         expand = function(args)
@@ -367,17 +380,13 @@ cmp.setup({
         ['<C-e>'] = cmp.mapping.abort(),
         ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
     }),
-    sources = cmp.config.sources({
-        { name = 'lazydev' },
-        { name = 'nvim_lsp' },
-        -- { name = 'vsnip' }, -- For vsnip users.
-        { name = 'luasnip' }, -- For luasnip users.
-        -- { name = 'ultisnips' }, -- For ultisnips users.
-        -- { name = 'snippy' }, -- For snippy users.
-    }, {
+    performance = {
+        fetching_timeout = 2000,
+    },
+    sources = cmp.config.sources(cmp_sources, {
         { name = 'buffer' },
         { name = 'path' },
-    })
+    }),
 })
 
 local common_config = {
