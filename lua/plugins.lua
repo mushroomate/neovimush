@@ -34,7 +34,6 @@ require("lazy").setup({
     },
 
     -- theme
-    "tanvirtin/monokai.nvim",
     {
         "loctvl842/monokai-pro.nvim",
         opts = {
@@ -91,22 +90,14 @@ require("lazy").setup({
             "sindrets/diffview.nvim", -- optional - Diff integration
 
             -- Only one of these is needed.
-            "nvim-telescope/telescope.nvim", -- optional
-            "ibhagwan/fzf-lua",              -- optional
-            "echasnovski/mini.pick",         -- optional
-            "folke/snacks.nvim",             -- optional
+            "ibhagwan/fzf-lua",       -- optional
+            "folke/snacks.nvim",      -- optional
         },
-    },
-    -- Vscode-like pictograms
-    {
-        "onsails/lspkind.nvim",
-        event = { "VimEnter" },
     },
     -- Auto-completion engine
     {
         "hrsh7th/nvim-cmp",
         dependencies = {
-            "lspkind.nvim",
             "hrsh7th/cmp-nvim-lsp",
             "hrsh7th/cmp-buffer",
             "hrsh7th/cmp-path",
@@ -380,8 +371,7 @@ require("lazy").setup({
         end
     },
 
-    -- Orgmode
-    "nvim-orgmode/orgmode",
+    -- Org mode
     "nvim-neorg/neorg",
 
     -- vim.suda
@@ -416,7 +406,6 @@ require("lazy").setup({
     {
         "yetone/avante.nvim",
         event = "VeryLazy",
-        lazy = false,
         version = false, -- set this if you want to always pull the latest change
         opts = {
             -- add any opts here
@@ -582,5 +571,3 @@ require("lazy").setup({
     -- others...
 
 })
-
-require("mason").setup()

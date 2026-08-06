@@ -12,12 +12,7 @@ local opts = {
 -- Normal mode --
 -----------------
 
--- Hint: see `:h vim.map.set()`
--- Better window navigation
-vim.keymap.set('n', '<C-h>', '<C-w>h', opts)
-vim.keymap.set('n', '<C-j>', '<C-w>j', opts)
-vim.keymap.set('n', '<C-k>', '<C-w>k', opts)
-vim.keymap.set('n', '<C-l>', '<C-w>l', opts)
+-- Hint: see `:h vim.keymap.set()`
 
 -- Resize iwth arrows
 -- delta: 2 lines
@@ -44,8 +39,8 @@ vim.keymap.set('v', '>', '>gv', opts)
 vim.keymap.set('n', '<Leader>t', '<Plug>Translate', { silent = true })
 vim.keymap.set('v', '<Leader>t', '<Plug>TranslateV', { silent = true })
 -- Display translation in a window    
-vim.keymap.set('n', '<Leader>w', '<Plug>TranslateW', { silent = true })
-vim.keymap.set('v', '<Leader>w', '<Plug>TranslateWV', { silent = true })
+vim.keymap.set('n', '<Leader>W', '<Plug>TranslateW', { silent = true })
+vim.keymap.set('v', '<Leader>W', '<Plug>TranslateWV', { silent = true })
 -- Replace the text with translation    
 vim.keymap.set('n', '<Leader>r', '<Plug>TranslateR', { silent = true })
 vim.keymap.set('v', '<Leader>r', '<Plug>TranslateRV', { silent = true })

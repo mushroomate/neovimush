@@ -35,7 +35,7 @@ return {
         })
 
         local debugpy_path
-        if vim.fn.has("win32") == 1 or vim.fn.has("whin64") == 1 then
+        if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
             debugpy_path = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/Scripts/python.exe"
         else
             debugpy_path = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python"
