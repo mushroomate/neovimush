@@ -28,7 +28,6 @@ require('lsp')        -- Mason, LSP, nvim-cmp, lspsaga, DAP keymaps
 ## 编辑器特性
 - **Leader 键**：空格
 - **colorscheme**：`monokai-pro`，日夜双滤镜（均为 `spectrum`）
-- **实时主题重载**：`lua/plugins/dankcolors.lua` 使用 `uv.new_fs_event` 监听自身文件变更，保存后自动重载主题
 - **跨平台**：`options.lua` 中区分 Windows（pwsh）、Linux（zsh）、WSL、Neovide，分别设置 shell、剪切板、字体等
 - **Treesitter 自动安装解析器**：lua, python, json, yaml, markdown, bash, rust
 - **spell check**：`cspell.json` 位于 repo 根目录，CSpell 通过 `null-ls` 集成

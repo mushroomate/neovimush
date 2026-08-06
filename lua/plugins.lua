@@ -37,7 +37,7 @@ require("lazy").setup({
     "tanvirtin/monokai.nvim",
     {
         "loctvl842/monokai-pro.nvim",
-        config = {
+        opts = {
             day_night = {
                 enable = true,             -- turn off by default
                 day_filter = "spectrum",   -- classic | octagon | pro | machine | ristretto | spectrum
@@ -65,10 +65,11 @@ require("lazy").setup({
             end
         },
         config = function()
-            require("nvim-treesitter").setup({
+            require("nvim-treesitter.configs").setup({
                 -- 核心功能配置
                 sync_install = false, -- 异步安装解析器
-                auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
+                auto_install = true,  -- 自动安装缺失的解析器
+                ensure_installed = { 'lua', 'python', 'json', 'yaml', 'markdown', 'bash', 'rust' },
 
                 -- 启用 treesitter 高亮（Neovim 0.12 新版 nvim-treesitter 需要显式开启）
                 highlight = {
@@ -79,7 +80,6 @@ require("lazy").setup({
                 -- 其他模块（按需启用）
                 -- indent = { enable = true },                -- 缩进（实验性）
                 incremental_selection = { enable = true }, -- 增量选择
-                textobjects = { enable = true },           -- 文本对象（如函数/类选择）
             })
         end,
     },
@@ -134,13 +134,113 @@ require("lazy").setup({
     -- Imporves LSP UI
     {
         'nvimdev/lspsaga.nvim',
-        config = function()
-        end,
         dependencies = {
             'nvim-treesitter/nvim-treesitter',
             'nvim-tree/nvim-web-devicons',
         },
         event = 'LspAttach',
+        opts = {
+            -- -------------------------------
+            -- 悬停文档 (Hover)
+            -- -------------------------------
+            hover = {
+                max_width = 0.6,  -- 窗口宽度占编辑器比例
+                max_height = 0.6, -- 窗口高度比例
+                border = 'rounded',
+                title = ' Documentation ',
+            },
+
+            -- -------------------------------
+            -- 代码动作 (Code Action)
+            -- 增强：支持数字快捷键、预览 diff
+            -- -------------------------------
+            code_action = {
+                num_shortcut = true,     -- 按数字快速选择动作
+                show_server_name = true, -- 显示 LSP 服务器名
+                keys = {
+                    exec = '<CR>',       -- 执行当前动作
+                    quit = { 'q', '<Esc>' },
+                },
+                lightbulb = { -- 当有可用动作时，行号边显示灯泡
+                    enable = false,
+                    sign = true,
+                    virtual_text = true,
+                },
+            },
+
+            -- -------------------------------
+            -- 重命名 (Rename)
+            -- -------------------------------
+            rename = {
+                in_select = true, -- 启动时自动高亮选中
+                auto_save = false,
+                keys = {
+                    exec = '<CR>',
+                    quit = { '<C-c>', '<Esc>' },
+                },
+            },
+
+            -- -------------------------------
+            -- 查找器 (Finder) — 引用/实现/定义预览
+            -- 快捷键 gr, gi 将调用此模块
+            -- -------------------------------
+            finder = {
+                max_height = 0.5,
+                left_width = 0.4, -- 左侧预览窗口宽度
+                methods = {       -- 可搜索的方法
+                    'textDocument/references',
+                    'textDocument/implementations',
+                    'textDocument/definitions',
+                },
+                default = 'def+ref+imp', -- 默认同时查定义、引用和实现
+                keys = {
+                    vsplit = 'v',        -- 垂直分屏打开
+                    split = 's',         -- 水平分屏打开
+                    quit = { 'q', '<Esc>' },
+                },
+            },
+
+            -- -------------------------------
+            -- 符号大纲 (Outline)
+            -- -------------------------------
+            outline = {
+                layout = 'normal',     -- 使用分屏窗口，而不是浮动窗口
+                win_position = 'left', -- 放在右侧
+                win_width = 30,
+                auto_preview = true,   -- 光标移动时自动预览符号位置
+                keys = {
+                    jump = '<CR>',
+                    quit = { 'q', '<Esc>' },
+                },
+            },
+
+            -- -------------------------------
+            -- 诊断增强 (Diagnostic)
+            -- 提供漂亮的浮动窗口和跳转列表
+            -- -------------------------------
+            diagnostic = {
+                show_layout = 'float', -- 浮动窗口显示
+                max_show_width = 0.7,
+                wrap_long_lines = true,
+                auto_preview = true,      -- 跳转时自动预览
+                jump_num_shortcut = true, -- 数字跳转
+                keys = {
+                    exec = 'o',
+                    quit = { 'q', '<Esc>' },
+                },
+            },
+
+            -- -------------------------------
+            -- 面包屑导航 (Winbar)
+            -- 在顶部显示当前上下文，如 `struct Foo > fn bar`
+            -- -------------------------------
+            symbol_in_winbar = {
+                enable = true,
+                folder_level = 2,
+                separator = ' > ',
+                color_mode = true,
+            },
+        },
     },
 
     -- DAP
@@ -465,7 +565,18 @@ require("lazy").setup({
             vim.o.timeoutlen = 300 -- 按下前缀键后等待 300 毫秒弹出提示面板
         end,
         opts = {
-            -- 在这里配置面板的样式、边框等
+            spec = {
+                { "<leader>w",  group = "Workspace" },
+                { "<leader>r",  group = "Rename/Symbol" },
+                { "<leader>c",  group = "Code Action" },
+                { "<leader>a",  group = "Avante" },
+                { "<leader>l",  group = "LSP Tools" }, -- 可用来存放 leader 下的 LSP 功能
+                { "<leader>t",  group = "Toggle" },
+                -- 可以进一步细化
+                { "<leader>o",  desc = "Outline" },
+                { "<leader>th", desc = "Toggle Inlay Hints" },
+                { "<leader>tw", desc = "Toggle Winbar" },
+            },
         }
     },
     -- others...

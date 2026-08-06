@@ -12,7 +12,12 @@ end
 vim.o.shell = default_shell
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
-vim.g.clipboard = 'osc52' --use system clipboard
+local osc52 = require('vim.ui.clipboard.osc52')
+vim.g.clipboard = {
+    name = 'OSC 52',
+    copy = { ['+'] = osc52.copy('+'), ['*'] = osc52.copy('*') },
+    paste = { ['+'] = osc52.paste('+'), ['*'] = osc52.paste('*') },
+}
 vim.opt.completeopt = { 'menu', 'menuone', 'noselect' }
 vim.opt.mouse = 'a'       -- allow the mouse to be used in Nvim
 
@@ -98,7 +103,7 @@ if vim.g.neovide then
             },
         }
     else
-        vim.g.clipboard = "unnamedplus"
+        vim.opt.clipboard = 'unnamedplus'
     end
 
     -- enable multigrid mode
