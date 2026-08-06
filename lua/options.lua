@@ -43,9 +43,6 @@ vim.opt.hlsearch = true   -- do highlight matches
 vim.opt.ignorecase = true -- ignore case in searches by default
 vim.opt.smartcase = true  -- but make it case sensitive if an uppercase is entered
 
--- encoding
-vim.opt.encoding = 'utf-8'
-
 -- GUI setting
 if vim.g.neovide then
     -- clipboard
