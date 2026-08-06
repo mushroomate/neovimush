@@ -54,6 +54,7 @@ local lsp_dependencies = {
     nil_ls        = { "nix" },   -- nil_ls 只有在有 nix 的环境下才有意义
     biome         = { "npm" },   -- biome 需要 npm
     ts_ls         = { "npm" },
+    jsonls        = { "npm" },   -- jsonls 需要 npm
     rust_analyzer = { "cargo" }, -- rust 依赖 cargo
     pyright       = { "npm" },
 }
