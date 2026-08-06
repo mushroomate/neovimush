@@ -70,39 +70,16 @@ require("lazy").setup({
                 sync_install = false, -- 异步安装解析器
                 auto_install = true,  -- 自动安装缺失的解析器（首次打开文件时）
 
-                -- 启用高亮
-                -- highlight = {
-                -- enable = true,
-                -- additional_vim_regex_highlighting = false, -- 禁用旧版 regex 高亮（提升性能）
-                -- },
+                -- 启用 treesitter 高亮（Neovim 0.12 新版 nvim-treesitter 需要显式开启）
+                highlight = {
+                    enable = true,
+                    additional_vim_regex_highlighting = false, -- 禁用旧版 regex 高亮（提升性能）
+                },
 
                 -- 其他模块（按需启用）
                 -- indent = { enable = true },                -- 缩进（实验性）
                 incremental_selection = { enable = true }, -- 增量选择
                 textobjects = { enable = true },           -- 文本对象（如函数/类选择）
-                init = function()
-                    local ensure_installed = {
-                        "lua", "python", "json", "yaml", "markdown", "bash", "rust"
-                    } -- 按需添加语言
-                    local alreadyInstalled = require('nvim-treesitter.config').get_installed()
-                    local parsersToInstall = vim.iter(ensure_installed)
-                        :filter(function(parser)
-                            return not vim.tbl_contains(alreadyInstalled, parser)
-                        end)
-                        :totable()
-                    require('nvim-treesitter').install(parsersToInstall)
-
-                    vim.api.nvim_create_autocmd('FileType', {
-                        callback = function()
-                            -- Enable treesitter highlighting and disable regex syntax
-                            pcall(vim.treesitter.start)
-                            -- Enable treesitter-based indentation
-                            if pcall(vim.treesitter.foldexpr) then
-                                vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-                            end
-                        end,
-                    })
-                end,
             })
         end,
     },
