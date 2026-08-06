@@ -35,7 +35,7 @@ local desired_lsps = {
     'lua_ls',
     'marksman',
     'pyright', 'ruff',
-    'ts_ls', 'biome',
+    'ts_ls', 'biome', 'jsonls',
     'rust_analyzer',
     'omnisharp',
     'nil_ls',
@@ -477,6 +477,7 @@ local ts_inlay_hints = {
 }
 
 servers.ts_ls = {
+    filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     settings = {
         -- TypeScript 的提示配置
         typescript = {
@@ -486,9 +487,29 @@ servers.ts_ls = {
         javascript = {
             inlayHints = ts_inlay_hints,
         },
-    }
+    },
+    -- Neovim 0.12+ 的 root_dir 必须是异步回调风格 (bufnr, on_dir)
+    root_dir = function(bufnr, on_dir)
+        local fname = vim.api.nvim_buf_get_name(bufnr)
+        if fname == '' then
+            return
+        end
+        on_dir(util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git')(fname))
+    end,
 }
 servers.nil_ls = {}
+
+servers.jsonls = {
+    filetypes = { "json", "jsonc" },
+    -- Neovim 0.12+ 的 root_dir 必须是异步回调风格 (bufnr, on_dir)
+    root_dir = function(bufnr, on_dir)
+        local fname = vim.api.nvim_buf_get_name(bufnr)
+        if fname == '' then
+            return
+        end
+        on_dir(util.root_pattern('.git', 'package.json')(fname))
+    end,
+}
 
 servers.lua_ls = {
     settings = {
@@ -510,22 +531,21 @@ servers.lua_ls = {
 servers.biome = {
     filetypes = {
         "javascript", "javascriptreact", "typescript", "typescriptreact",
-        "json", "jsonc", "css", "svelte", "vue", "astro"
+        "graphql", "css", "svelte", "vue", "astro"
     },
     single_file_support = true,
-    root_dir = function(fname)
-        -- fname 是文件路径(string)
-        local root_file = util.root_pattern("biome.json", "biome.jsonc")(fname)
-        if root_file then
-            return root_file
+    -- Neovim 0.12+ 的 root_dir 必须是异步回调风格 (bufnr, on_dir)
+    root_dir = function(bufnr, on_dir)
+        local fname = vim.api.nvim_buf_get_name(bufnr)
+        if fname == '' then
+            return
         end
 
-        local git_root = util.root_pattern(".git")(fname)
-        if git_root then
-            return git_root
+        local root = util.root_pattern("biome.json", "biome.jsonc")(fname)
+        if not root then
+            root = util.root_pattern(".git")(fname)
         end
-
-        return vim.fs.dirname(fname)
+        on_dir(root or vim.fs.dirname(fname))
     end,
 }
 
@@ -534,6 +554,28 @@ for name, config in pairs(servers) do
     local final_config = vim.tbl_deep_extend("force", common_config, config)
     vim.lsp.config(name, final_config)
     vim.lsp.enable(name)
+end
+
+-- Neovim 0.12+ 的自动激活要求 root_dir 是异步回调风格 (bufnr, on_dir)。
+-- lspconfig 默认（以及部分自定义）的 root_dir 是旧的单参数 (fname) 函数，
+-- 若直接使用，客户端永远不会启动。这里统一把单参数版本包一层做兼容。
+for name, _ in pairs(servers) do
+    local cfg = vim.lsp.config[name]
+    if cfg and type(cfg.root_dir) == 'function' then
+        local orig_root_dir = cfg.root_dir
+        local info = debug.getinfo(orig_root_dir)
+        if info and info.nparams and info.nparams < 2 then
+            vim.lsp.config(name, {
+                root_dir = function(bufnr, on_dir)
+                    local fname = vim.api.nvim_buf_get_name(bufnr)
+                    if fname == '' then
+                        return
+                    end
+                    on_dir(orig_root_dir(fname))
+                end,
+            })
+        end
+    end
 end
 
 
