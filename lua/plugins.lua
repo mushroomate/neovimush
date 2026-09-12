@@ -211,7 +211,6 @@ require("lazy").setup({
     {
         'nvimdev/lspsaga.nvim',
         dependencies = {
-            'nvim-treesitter/nvim-treesitter',
             'nvim-tree/nvim-web-devicons',
         },
         event = 'LspAttach',
@@ -518,7 +517,6 @@ require("lazy").setup({
         },
         build = avante_build_cmd,
         dependencies = {
-            "nvim-treesitter/nvim-treesitter",
             "stevearc/dressing.nvim",
             "nvim-lua/plenary.nvim",
             "MunifTanjim/nui.nvim",
