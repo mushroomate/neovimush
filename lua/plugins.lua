@@ -58,16 +58,14 @@ require("lazy").setup({
         lazy = false,                                      -- 该插件不支持懒加载
         build = ":TSUpdate",                               -- 自动安装更新解析器
         dependencies = {
-            "nvim-treesitter/nvim-treesitter-textobjects", -- 增强文本对象（可选）
-            branch = 'main',
-            event = 'VeryLazy',
-            config = function()
-                require 'nvim-treesitter-textobjects'.setup({
-                    select = { enable = true },
-                    swap = { enable = true },
-                    move = { enable = true },
-                })
-            end
+            {
+                "nvim-treesitter/nvim-treesitter-textobjects", -- 增强文本对象
+                branch = ts_branch,
+                init = function()
+                    -- 禁用内置 ftplugin 映射，避免与显式键位冲突
+                    vim.g.no_plugin_maps = true
+                end,
+            },
         },
         config = function()
             local ensure_installed = { 'lua', 'python', 'json', 'yaml', 'markdown', 'bash', 'rust' }
@@ -81,6 +79,48 @@ require("lazy").setup({
                         pcall(vim.treesitter.start)
                     end,
                 })
+
+                -- textobjects（main 分支）：setup + 显式键位
+                require("nvim-treesitter-textobjects").setup({
+                    select = { lookahead = true },
+                    move = { set_jumps = true },
+                })
+
+                local function ts_select(query)
+                    return function()
+                        require("nvim-treesitter-textobjects.select").select_textobject(query, "textobjects")
+                    end
+                end
+                local function ts_move(fn, query)
+                    return function()
+                        require("nvim-treesitter-textobjects.move")[fn](query, "textobjects")
+                    end
+                end
+                local function ts_swap(fn, query)
+                    return function()
+                        require("nvim-treesitter-textobjects.swap")[fn](query)
+                    end
+                end
+
+                -- 选择
+                vim.keymap.set({ "x", "o" }, "am", ts_select("@function.outer"), { desc = "TS: 函数(外)" })
+                vim.keymap.set({ "x", "o" }, "im", ts_select("@function.inner"), { desc = "TS: 函数(内)" })
+                vim.keymap.set({ "x", "o" }, "ac", ts_select("@class.outer"), { desc = "TS: 类(外)" })
+                vim.keymap.set({ "x", "o" }, "ic", ts_select("@class.inner"), { desc = "TS: 类(内)" })
+
+                -- 移动
+                vim.keymap.set({ "n", "x", "o" }, "]m", ts_move("goto_next_start", "@function.outer"), { desc = "TS: 下一函数开头" })
+                vim.keymap.set({ "n", "x", "o" }, "[m", ts_move("goto_previous_start", "@function.outer"), { desc = "TS: 上一函数开头" })
+                vim.keymap.set({ "n", "x", "o" }, "]M", ts_move("goto_next_end", "@function.outer"), { desc = "TS: 下一函数结尾" })
+                vim.keymap.set({ "n", "x", "o" }, "[M", ts_move("goto_previous_end", "@function.outer"), { desc = "TS: 上一函数结尾" })
+                vim.keymap.set({ "n", "x", "o" }, "]]", ts_move("goto_next_start", "@class.outer"), { desc = "TS: 下一类开头" })
+                vim.keymap.set({ "n", "x", "o" }, "[[", ts_move("goto_previous_start", "@class.outer"), { desc = "TS: 上一类开头" })
+                vim.keymap.set({ "n", "x", "o" }, "][", ts_move("goto_next_end", "@class.outer"), { desc = "TS: 下一类结尾" })
+                vim.keymap.set({ "n", "x", "o" }, "[]", ts_move("goto_previous_end", "@class.outer"), { desc = "TS: 上一类结尾" })
+
+                -- 交换
+                vim.keymap.set("n", "<leader>sn", ts_swap("swap_next", "@parameter.inner"), { desc = "TS: 与下一参数交换" })
+                vim.keymap.set("n", "<leader>sN", ts_swap("swap_previous", "@parameter.inner"), { desc = "TS: 与上一参数交换" })
             else
                 -- master 分支（旧版）：沿用 configs 模块
                 require("nvim-treesitter.configs").setup({
@@ -96,6 +136,33 @@ require("lazy").setup({
                     -- 其他模块（按需启用）
                     -- indent = { enable = true },                -- 缩进（实验性）
                     incremental_selection = { enable = true }, -- 增量选择
+
+                    -- textobjects（master 分支）：通过 configs 注册显式键位
+                    textobjects = {
+                        select = {
+                            enable = true,
+                            lookahead = true,
+                            keymaps = {
+                                ["am"] = "@function.outer",
+                                ["im"] = "@function.inner",
+                                ["ac"] = "@class.outer",
+                                ["ic"] = "@class.inner",
+                            },
+                        },
+                        move = {
+                            enable = true,
+                            set_jumps = true,
+                            goto_next_start = { ["]m"] = "@function.outer", ["]]"] = "@class.outer" },
+                            goto_next_end = { ["]M"] = "@function.outer", ["]["] = "@class.outer" },
+                            goto_previous_start = { ["[m"] = "@function.outer", ["[["] = "@class.outer" },
+                            goto_previous_end = { ["[M"] = "@function.outer", ["[]"] = "@class.outer" },
+                        },
+                        swap = {
+                            enable = true,
+                            swap_next = { ["<leader>sn"] = "@parameter.inner" },
+                            swap_previous = { ["<leader>sN"] = "@parameter.inner" },
+                        },
+                    },
                 })
             end
         end,
