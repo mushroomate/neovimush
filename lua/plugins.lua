@@ -236,11 +236,19 @@ require("lazy").setup({
                     exec = '<CR>',       -- 执行当前动作
                     quit = { 'q', '<Esc>' },
                 },
-                lightbulb = { -- 当有可用动作时，行号边显示灯泡
-                    enable = false,
-                    sign = true,
-                    virtual_text = true,
-                },
+            },
+
+            -- -------------------------------
+            -- 代码动作灯泡 (Lightbulb)
+            -- 只保留行末提示，关闭行号左侧 sign，避免符号出现时文字横向抖动
+            -- -------------------------------
+            lightbulb = {
+                enable = true,
+                sign = false,        -- 关掉 sign（推挤文字的来源）
+                virtual_text = true, -- 行末灯泡，overlay 不占布局宽度
+                debounce = 10,
+                sign_priority = 40,
+                enable_in_insert = false,
             },
 
             -- -------------------------------
