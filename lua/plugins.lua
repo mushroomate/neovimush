@@ -516,9 +516,11 @@ require("lazy").setup({
                 },
                 deepseek = {
                     __inherited_from = "openai",
-                    api_key_name = "",
+                    -- avante 会优先读 AVANTE_DEEPSEEK_API_KEY，其次读这里指定的变量
+                    api_key_name = "DEEPSEEK_API_KEY",
                     endpoint = "https://api.deepseek.com/",
-                    model = "deepseek-coder",
+                    -- deepseek-coder 已下线，官方等价模型为 deepseek-chat
+                    model = "deepseek-chat",
                 },
             },
 
