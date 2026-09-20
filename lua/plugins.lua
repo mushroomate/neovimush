@@ -490,6 +490,27 @@ require("lazy").setup({
                         api_key = "DEEPSEEK_API_KEY",
                     },
                 },
+                -- AI 补全走 virtualtext（ghost text）前端，而不是 nvim-cmp 菜单。
+                -- cmp 菜单每个候选只能显示一行，多行补全会被截断；virtualtext
+                -- 用 virt_text + virt_lines 渲染，多行内容可完整内联显示。
+                virtualtext = {
+                    -- 自动触发的文件类型；想全部启用可改为 { "*" }。
+                    -- 留空则仅能通过 <A-]> 手动触发。
+                    auto_trigger_ft = {
+                        "lua", "python", "javascript", "typescript",
+                        "go", "rust", "c", "cpp", "bash", "markdown",
+                    },
+                    keymap = {
+                        accept = "<A-a>",         -- 整段接受
+                        accept_line = "<A-l>",    -- 只接受一行
+                        accept_n_lines = "<A-A>", -- 接受 N 行（会提示输入行数）
+                        prev = "<A-[>",           -- 上一条候选
+                        next = "<A-]>",           -- 下一条候选 / 无建议时手动触发
+                        dismiss = "<A-e>",        -- 取消
+                    },
+                    -- minuet 已不再作为 cmp 源，此选项保持默认即可
+                    show_on_completion_menu = false,
+                },
             })
         end,
     },

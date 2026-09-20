@@ -12,9 +12,10 @@ local cmp_sources = {
     { name = 'luasnip' },  -- For luasnip user
 }
 
-if vim.fn.environ()["DEEPSEEK_API_KEY"] ~= nil then
-    table.insert(cmp_sources, { name = 'minuet' })
-end
+-- NOTE: AI completion (minuet-ai) intentionally does NOT go through cmp.
+-- nvim-cmp's popup can only render one line per candidate, which truncates
+-- multi-line AI completions. Minuet's `virtualtext` frontend (configured in
+-- lua/plugins.lua) shows the full multi-line suggestion as inline ghost text.
 
 cmp.setup({
     snippet = {
