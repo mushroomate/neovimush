@@ -368,6 +368,15 @@ require("lazy").setup({
                     -- week_header = {
                     -- enable = true,
                     -- },
+                    -- 「最近项目」默认 action 是 `Telescope find_files cwd=`，
+                    -- 本仓库未安装 Telescope，改用 fzf-lua。插件在调用 action 前
+                    -- 已 `lcd` 进项目目录，直接用函数打开文件选择器即可。
+                    project = {
+                        action = function()
+                            require("fzf-lua").files()
+                        end,
+                        limit = 8,
+                    },
                 },
             })
         end,
