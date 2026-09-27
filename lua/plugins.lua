@@ -560,6 +560,11 @@ require("lazy").setup({
             "stevearc/dressing.nvim",
             "nvim-lua/plenary.nvim",
             "MunifTanjim/nui.nvim",
+            -- avante 命令解析依赖（纯 Lua，非 luarocks）
+            {
+                "ColinKennedy/mega.cmdparse",
+                dependencies = { "ColinKennedy/mega.logging" },
+            },
             --- The below dependencies are optional,
             "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
             "zbirenbaum/copilot.lua",      -- for providers='copilot'
