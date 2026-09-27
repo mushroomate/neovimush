@@ -5,7 +5,7 @@
 ## 核心能力
 
 - **LSP**：Mason + lspconfig + lspsaga（lua_ls / pyright / ruff / ts_ls / biome / jsonls / marksman / rust-analyzer / omnisharp 等）
-- **补全**：nvim-cmp + LuaSnip，AI 补全 minuet-ai（DeepSeek）
+- **补全**：nvim-cmp + LuaSnip，AI 补全 minuet-ai（优先本地 ollama qwen3.5，否则 DeepSeek）
 - **AI 助手**：avante.nvim（Claude 主 / DeepSeek 备选）
 - **主题**：Monokai Pro（日夜双滤镜）
 - **文件管理**：nvim-tree、yazi

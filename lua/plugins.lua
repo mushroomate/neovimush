@@ -26,6 +26,31 @@ end
 local nvim_012 = vim.fn.has("nvim-0.12") == 1
 local ts_branch = nvim_012 and "main" or "master"
 
+-- 探测本机 ollama 是否有可用的 qwen3.5 模型：优先 latest，其次 9b。
+-- ollama 服务未启动或缺少 curl 时返回 nil，minuet 将回退到 DeepSeek。
+local function minuet_local_model()
+    if vim.fn.executable("curl") == 0 then
+        return nil
+    end
+    local out = vim.fn.system({
+        "curl",
+        "-s",
+        "--max-time",
+        "2",
+        "http://localhost:11434/api/tags",
+    })
+    if vim.v.shell_error ~= 0 or out == "" then
+        return nil
+    end
+    if out:find('"qwen3.5:latest"', 1, true) then
+        return "qwen3.5:latest"
+    end
+    if out:find('"qwen3.5:9b"', 1, true) then
+        return "qwen3.5:9b"
+    end
+    return nil
+end
+
 -- require of the monoka
 require("lazy").setup({
     -- translator
@@ -482,45 +507,76 @@ require("lazy").setup({
     {
         "milanglacier/minuet-ai.nvim",
         cond = function()
-            local has_key = vim.fn.environ()["DEEPSEEK_API_KEY"] ~= nil
-            if not has_key then
+            local has_key = (vim.env.DEEPSEEK_API_KEY or "") ~= ""
+            local local_model = minuet_local_model()
+            if not has_key and not local_model then
                 vim.notify(
-                    "[minuet-ai] $DEEPSEEK_API_KEY 未设置，AI 补全功能已跳过",
+                    "[minuet-ai] 未检测到本地 ollama qwen3.5 模型，且 $DEEPSEEK_API_KEY 未设置，AI 补全功能已跳过",
                     vim.log.levels.INFO
                 )
             end
-            return has_key
+            return has_key or local_model ~= nil
         end,
         config = function()
-            require("minuet").setup({
-                provider = "openai_fim_compatible",
-                provider_options = {
-                    openai_fim_compatible = {
-                        api_key = "DEEPSEEK_API_KEY",
-                    },
+            -- AI 补全走 virtualtext（ghost text）前端，而不是 nvim-cmp 菜单。
+            -- cmp 菜单每个候选只能显示一行，多行补全会被截断；virtualtext
+            -- 用 virt_text + virt_lines 渲染，多行内容可完整内联显示。
+            local virtualtext = {
+                -- 自动触发的文件类型；想全部启用可改为 { "*" }。
+                -- 留空则仅能通过 <A-]> 手动触发。
+                auto_trigger_ft = {
+                    "lua", "python", "javascript", "typescript",
+                    "go", "rust", "c", "cpp", "bash", "markdown",
                 },
-                -- AI 补全走 virtualtext（ghost text）前端，而不是 nvim-cmp 菜单。
-                -- cmp 菜单每个候选只能显示一行，多行补全会被截断；virtualtext
-                -- 用 virt_text + virt_lines 渲染，多行内容可完整内联显示。
-                virtualtext = {
-                    -- 自动触发的文件类型；想全部启用可改为 { "*" }。
-                    -- 留空则仅能通过 <A-]> 手动触发。
-                    auto_trigger_ft = {
-                        "lua", "python", "javascript", "typescript",
-                        "go", "rust", "c", "cpp", "bash", "markdown",
-                    },
-                    keymap = {
-                        accept = "<A-a>",         -- 整段接受
-                        accept_line = "<A-l>",    -- 只接受一行
-                        accept_n_lines = "<A-A>", -- 接受 N 行（会提示输入行数）
-                        prev = "<A-[>",           -- 上一条候选
-                        next = "<A-]>",           -- 下一条候选 / 无建议时手动触发
-                        dismiss = "<A-e>",        -- 取消
-                    },
-                    -- minuet 已不再作为 cmp 源，此选项保持默认即可
-                    show_on_completion_menu = false,
+                keymap = {
+                    accept = "<A-a>",         -- 整段接受
+                    accept_line = "<A-l>",    -- 只接受一行
+                    accept_n_lines = "<A-A>", -- 接受 N 行（会提示输入行数）
+                    prev = "<A-[>",           -- 上一条候选
+                    next = "<A-]>",           -- 下一条候选 / 无建议时手动触发
+                    dismiss = "<A-e>",        -- 取消
                 },
-            })
+                -- minuet 已不再作为 cmp 源，此选项保持默认即可
+                show_on_completion_menu = false,
+            }
+
+            local local_model = minuet_local_model()
+            if local_model then
+                -- 本机 ollama：qwen3.5 是思考模型且不支持 FIM（无 insert capability），
+                -- 所以走 chat 端点；用 reasoning_effort = "none" 关闭思考
+                -- （实测 think = false 在 /v1 端点无效）。
+                require("minuet").setup({
+                    provider = "openai_compatible",
+                    n_completions = 1, -- 本地模型省资源
+                    context_window = 2048,
+                    provider_options = {
+                        openai_compatible = {
+                            model = local_model,
+                            end_point = "http://localhost:11434/v1/chat/completions",
+                            -- minuet 要求 api_key 非空；ollama 不校验，用函数返回占位值
+                            api_key = function()
+                                return "ollama"
+                            end,
+                            name = "Ollama",
+                            optional = {
+                                reasoning_effort = "none",
+                                max_tokens = 256,
+                            },
+                        },
+                    },
+                    virtualtext = virtualtext,
+                })
+            else
+                require("minuet").setup({
+                    provider = "openai_fim_compatible",
+                    provider_options = {
+                        openai_fim_compatible = {
+                            api_key = "DEEPSEEK_API_KEY",
+                        },
+                    },
+                    virtualtext = virtualtext,
+                })
+            end
         end,
     },
 

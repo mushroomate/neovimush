@@ -35,7 +35,7 @@ require('lsp')        -- Mason, LSP, nvim-cmp, lspsaga, DAP keymaps
 
 ## AI 插件
 - **avante.nvim**：主 provider 为 Claude（`claude-sonnet-4-20250514`），备选 DeepSeek。需手动 `make` 编译
-- **minuet-ai.nvim**：AI 代码补全，仅当设置 `DEEPSEEK_API_KEY` 时加载，后端指向 `api.deepseek.com`
+- **minuet-ai.nvim**：AI 代码补全。启动时探测本机 ollama，若存在 `qwen3.5:latest`（否则 `qwen3.5:9b`）则走本地 chat 端点（`openai_compatible` + `reasoning_effort=none` 关闭思考）；否则回退 DeepSeek（`openai_fim_compatible` + `DEEPSEEK_API_KEY`）。两者都不可用时不加载
 
 ## 调试（DAP）
 - Python：`debugpy`（Mason 安装）
