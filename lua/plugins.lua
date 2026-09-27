@@ -549,6 +549,12 @@ require("lazy").setup({
                     provider = "openai_compatible",
                     n_completions = 1, -- 本地模型省资源
                     context_window = 2048,
+                    -- 全局开关：<leader>ta 切换，仅拦自动触发（手动 <A-]> 仍可用）
+                    enable_predicates = {
+                        function()
+                            return vim.g.minuet_ai_enabled ~= false
+                        end,
+                    },
                     provider_options = {
                         openai_compatible = {
                             model = local_model,
@@ -569,6 +575,12 @@ require("lazy").setup({
             else
                 require("minuet").setup({
                     provider = "openai_fim_compatible",
+                    -- 全局开关：<leader>ta 切换，仅拦自动触发（手动 <A-]> 仍可用）
+                    enable_predicates = {
+                        function()
+                            return vim.g.minuet_ai_enabled ~= false
+                        end,
+                    },
                     provider_options = {
                         openai_fim_compatible = {
                             api_key = "DEEPSEEK_API_KEY",
@@ -577,6 +589,20 @@ require("lazy").setup({
                     virtualtext = virtualtext,
                 })
             end
+
+            -- 开关 AI 补全：全局生效，关闭时清掉当前 ghost text。
+            -- 仅拦自动触发，手动 <A-]> 仍可用（minuet 设计如此）。
+            vim.keymap.set("n", "<leader>ta", function()
+                vim.g.minuet_ai_enabled = not (vim.g.minuet_ai_enabled ~= false)
+                if not vim.g.minuet_ai_enabled then
+                    require("minuet.virtualtext").action.dismiss()
+                end
+                vim.notify(
+                    "[minuet-ai] AI completion "
+                        .. (vim.g.minuet_ai_enabled and "enabled" or "disabled"),
+                    vim.log.levels.INFO
+                )
+            end, { desc = "Toggle AI Completion" })
         end,
     },
 
@@ -747,6 +773,7 @@ require("lazy").setup({
                 { "<leader>t",  group = "Toggle" },
                 -- 可以进一步细化
                 { "<leader>o",  desc = "Outline" },
+                { "<leader>ta", desc = "Toggle AI Completion" },
                 { "<leader>th", desc = "Toggle Inlay Hints" },
                 { "<leader>tw", desc = "Toggle Winbar" },
             },
