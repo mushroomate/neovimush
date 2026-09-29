@@ -478,11 +478,6 @@ require("lazy").setup({
                     ignore = false,
                     timeout = 500,
                 },
-                -- 系统设置
-                system_open = {
-                    cmd = nil,
-                    args = {},
-                },
                 -- 文件监视
                 update_focused_file = {
                     enable = true,
