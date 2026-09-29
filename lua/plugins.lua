@@ -26,12 +26,34 @@ end
 local nvim_012 = vim.fn.has("nvim-0.12") == 1
 local ts_branch = nvim_012 and "main" or "master"
 
--- 探测本机 ollama 是否有可用的 qwen3.5 模型：优先 latest，其次 9b。
--- ollama 服务未启动或缺少 curl 时返回 nil，minuet 将回退到 DeepSeek。
-local function minuet_local_model()
+-- 探测本机可用的 AI 后端，按优先级返回 { model, end_point, api_key, name }：
+--   1) llama.cpp llama-server（Qwen3.6-35B-A3B，https://llm.sugarsource.club）—— 首选
+--   2) ollama 的 qwen3.5（latest 优先，其次 9b）
+-- 都不可用返回 nil，minuet 将回退到 DeepSeek。
+-- 注意：minuet 的 api_key 字段是「环境变量名」，不是 key 值本身。
+local function minuet_local_target()
     if vim.fn.executable("curl") == 0 then
         return nil
     end
+
+    -- 1) 本机 llama.cpp 服务（Qwen3.6-35B-A3B / Q6_K_P，经 nginx 反代）
+    local health = vim.fn.system({
+        "curl",
+        "-s",
+        "--max-time",
+        "1",
+        "https://llm.sugarsource.club/health",
+    })
+    if vim.v.shell_error == 0 and health:find('"ok"', 1, true) then
+        return {
+            model = "qwen3.6-35b-a3b",
+            end_point = "https://llm.sugarsource.club/v1/chat/completions",
+            api_key = "SUGARSOURCE_API_KEY",
+            name = "llama.cpp",
+        }
+    end
+
+    -- 2) ollama：qwen3.5（latest 优先，其次 9b）
     local out = vim.fn.system({
         "curl",
         "-s",
@@ -42,11 +64,15 @@ local function minuet_local_model()
     if vim.v.shell_error ~= 0 or out == "" then
         return nil
     end
-    if out:find('"qwen3.5:latest"', 1, true) then
-        return "qwen3.5:latest"
-    end
-    if out:find('"qwen3.5:9b"', 1, true) then
-        return "qwen3.5:9b"
+    for _, model in ipairs({ "qwen3.5:latest", "qwen3.5:9b" }) do
+        if out:find('"' .. model .. '"', 1, true) then
+            return {
+                model = model,
+                end_point = "http://localhost:11434/v1/chat/completions",
+                api_key = "TERM",
+                name = "Ollama",
+            }
+        end
     end
     return nil
 end
@@ -508,14 +534,14 @@ require("lazy").setup({
         "milanglacier/minuet-ai.nvim",
         cond = function()
             local has_key = (vim.env.DEEPSEEK_API_KEY or "") ~= ""
-            local local_model = minuet_local_model()
-            if not has_key and not local_model then
+            local target = minuet_local_target()
+            if not has_key and not target then
                 vim.notify(
-                    "[minuet-ai] 未检测到本地 ollama qwen3.5 模型，且 $DEEPSEEK_API_KEY 未设置，AI 补全功能已跳过",
+                    "[minuet-ai] 未检测到本地模型（llama.cpp:8090 / ollama qwen3.5），且 $DEEPSEEK_API_KEY 未设置，AI 补全功能已跳过",
                     vim.log.levels.INFO
                 )
             end
-            return has_key or local_model ~= nil
+            return has_key or target ~= nil
         end,
         config = function()
             -- AI 补全走 virtualtext（ghost text）前端，而不是 nvim-cmp 菜单。
@@ -540,11 +566,20 @@ require("lazy").setup({
                 show_on_completion_menu = false,
             }
 
-            local local_model = minuet_local_model()
-            if local_model then
-                -- 本机 ollama：qwen3.5 是思考模型且不支持 FIM（无 insert capability），
-                -- 所以走 chat 端点；用 reasoning_effort = "none" 关闭思考
-                -- （实测 think = false 在 /v1 端点无效）。
+            local target = minuet_local_target()
+            if target then
+                -- 本地模型（优先 llama.cpp 的 Qwen3.6-35B-A3B，其次 ollama qwen3.5）
+                -- 都是思考模型且不支持 FIM（无 insert capability），所以走 chat 端点，
+                -- 并显式关闭思考。
+                local optional = { max_tokens = 256 }
+                if target.name == "llama.cpp" then
+                    -- llama.cpp（--jinja）：用 chat_template_kwargs 关思考
+                    optional.chat_template_kwargs = { enable_thinking = false }
+                else
+                    -- ollama /v1 端点：用 reasoning_effort 关思考
+                    -- （实测 think = false 在 /v1 端点无效）
+                    optional.reasoning_effort = "none"
+                end
                 require("minuet").setup({
                     provider = "openai_compatible",
                     n_completions = 1, -- 本地模型省资源
@@ -557,17 +592,12 @@ require("lazy").setup({
                     },
                     provider_options = {
                         openai_compatible = {
-                            model = local_model,
-                            end_point = "http://localhost:11434/v1/chat/completions",
-                            -- minuet 要求 api_key 非空；ollama 不校验，用函数返回占位值
-                            api_key = function()
-                                return "ollama"
-                            end,
-                            name = "Ollama",
-                            optional = {
-                                reasoning_effort = "none",
-                                max_tokens = 256,
-                            },
+                            model = target.model,
+                            end_point = target.end_point,
+                            -- minuet 的 api_key 是环境变量名：llama 用 SUGARSOURCE_API_KEY，ollama 用 TERM
+                            api_key = target.api_key,
+                            name = target.name,
+                            optional = optional,
                         },
                     },
                     virtualtext = virtualtext,
@@ -612,11 +642,27 @@ require("lazy").setup({
         event = "VeryLazy",
         version = false, -- set this if you want to always pull the latest change
         opts = {
-            -- add any opts here
-            -- provider = "deepseek",
-            -- provider = "cloude",
-            auto_suggestions_provider = "claude",
+            -- 默认优先使用本地模型（llama.cpp，Qwen3.6-35B-A3B）；
+            -- 需要时用 :AvanteSwitchProvider claude / deepseek 临时切换。
+            provider = "llama_local",
+            auto_suggestions_provider = "llama_local",
             providers = {
+                -- 本机 llama.cpp llama-server（Qwen3.6-35B-A3B / Q6_K_P）
+                -- api_key_name = "SUGARSOURCE_API_KEY" 从环境变量读；SUGARSOURCE_API_KEY
+                llama_local = {
+                    __inherited_from = "openai",
+                    api_key_name = "SUGARSOURCE_API_KEY",
+                    endpoint = "https://llm.sugarsource.club/v1",
+                    model = "qwen3.6-35b-a3b",
+                    use_response_api = false,
+                    timeout = 10000, -- 10秒
+                    extra_request_body = {
+                        temperature = 0.6,
+                        max_tokens = 12288,
+                        -- 本地 44 t/s，
+                        chat_template_kwargs = { enable_thinking = false },
+                    },
+                },
                 claude = {
                     endpoint = "https://api.anthropic.com",
                     model = "claude-sonnet-4-20250514",
