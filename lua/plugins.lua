@@ -27,7 +27,7 @@ local nvim_012 = vim.fn.has("nvim-0.12") == 1
 local ts_branch = nvim_012 and "main" or "master"
 
 -- 探测本机可用的 AI 后端，按优先级返回 { model, end_point, api_key, name }：
---   1) llama.cpp llama-server（Qwen3.6-35B-A3B，https://llm.sugarsource.club）—— 首选
+--   1) Crysta（llama-server，https://llm.sugarsource.club）—— 首选
 --   2) ollama 的 qwen3.5（latest 优先，其次 9b）
 -- 都不可用返回 nil，minuet 将回退到 DeepSeek。
 -- 注意：minuet 的 api_key 字段是「环境变量名」，不是 key 值本身。
@@ -36,7 +36,7 @@ local function minuet_local_target()
         return nil
     end
 
-    -- 1) 本机 llama.cpp 服务（Qwen3.6-35B-A3B / Q6_K_P，经 nginx 反代）
+    -- 1) Crysta（llama.cpp 服务）
     local health = vim.fn.system({
         "curl",
         "-s",
@@ -46,10 +46,10 @@ local function minuet_local_target()
     })
     if vim.v.shell_error == 0 and health:find('"ok"', 1, true) then
         return {
-            model = "qwen3.6-35b-a3b",
+            model = "Crysta",
             end_point = "https://llm.sugarsource.club/v1/chat/completions",
             api_key = "SUGARSOURCE_API_KEY",
-            name = "llama.cpp",
+            name = "Crysta",
         }
     end
 
@@ -637,18 +637,18 @@ require("lazy").setup({
         event = "VeryLazy",
         version = false, -- set this if you want to always pull the latest change
         opts = {
-            -- 默认优先使用本地模型（llama.cpp，Qwen3.6-35B-A3B）；
+            -- 默认优先使用 Crysta；
             -- 需要时用 :AvanteSwitchProvider claude / deepseek 临时切换。
             provider = "llama_local",
             auto_suggestions_provider = "llama_local",
             providers = {
-                -- 本机 llama.cpp llama-server（Qwen3.6-35B-A3B / Q6_K_P）
+                -- Crysta（llama-server）
                 -- api_key_name = "SUGARSOURCE_API_KEY" 从环境变量读；SUGARSOURCE_API_KEY
                 llama_local = {
                     __inherited_from = "openai",
                     api_key_name = "SUGARSOURCE_API_KEY",
                     endpoint = "https://llm.sugarsource.club/v1",
-                    model = "qwen3.6-35b-a3b",
+                    model = "Crysta",
                     use_response_api = false,
                     timeout = 10000, -- 10秒
                     extra_request_body = {
