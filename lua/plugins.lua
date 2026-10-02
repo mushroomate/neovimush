@@ -77,7 +77,7 @@ local function minuet_local_target()
     return nil
 end
 
--- require of the monoka
+-- require of the monokai
 require("lazy").setup({
     -- translator
     "voldikss/vim-translator",
