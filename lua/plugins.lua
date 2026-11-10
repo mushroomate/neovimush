@@ -518,9 +518,6 @@ require("lazy").setup({
         end
     },
 
-    -- Org mode
-    "nvim-neorg/neorg",
-
     -- vim.suda
     "lambdalisue/vim-suda",
 
